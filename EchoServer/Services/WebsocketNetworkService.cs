@@ -35,7 +35,7 @@ namespace EchoServer.Services
                 _requestQueue.EnQueue(
                     receiveResult.CloseStatus.HasValue ?
                         _packetFactory.CreateClose(session) :
-                        _packetFactory.CreateBasic(session, buffer)
+                        _packetFactory.CreateBasic(session, buffer[..receiveResult.Count])
                 );
             } while (!receiveResult.CloseStatus.HasValue);
 

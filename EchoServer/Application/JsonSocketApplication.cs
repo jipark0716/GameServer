@@ -57,12 +57,10 @@ namespace EchoServer.Application
             List<object?> parameters = new();
             foreach (var parameter in action.Method.GetParameters())
             {
-                parameter.GetType();
+                parameters.Add(JsonSerializer.Deserialize(packet.Body, parameter.ParameterType, _jsonSerializerOptions));
             }
             var controller = _serviceProvider.GetRequiredService(action.Controller);
             action.Method.Invoke(controller, parameters.ToArray());
-
-            JsonSerializer.Deserialize<string>(packet.Body, _jsonSerializerOptions);
         }
 
         public void Enqueue(ResponsePacket packet)

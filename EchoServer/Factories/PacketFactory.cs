@@ -20,8 +20,8 @@ namespace EchoServer.Factories
             return new()
             {
                 Session = session,
-                Header = BitConverter.ToUInt16(payload[..1]),
-                Body = payload[1..],
+                Header = BitConverter.ToUInt16(payload[..2]),
+                Body = payload[2..],
                 Type = PacketType.Basic,
             };
         }
