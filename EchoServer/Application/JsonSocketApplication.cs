@@ -54,13 +54,19 @@ namespace EchoServer.Application
                 return;
             }
 
-            List<object?> parameters = new();
-            foreach (var parameter in action.Method.GetParameters())
-            {
-                parameters.Add(JsonSerializer.Deserialize(packet.Body, parameter.ParameterType, _jsonSerializerOptions));
+            try {
+                List<object?> parameters = new();
+                foreach (var parameter in action.Method.GetParameters())
+                {
+                    parameters.Add(JsonSerializer.Deserialize(packet.Body, parameter.ParameterType, _jsonSerializerOptions));
+                }
+                var controller = _serviceProvider.GetRequiredService(action.Controller);
+                action.Method.Invoke(controller, parameters.ToArray());
             }
-            var controller = _serviceProvider.GetRequiredService(action.Controller);
-            action.Method.Invoke(controller, parameters.ToArray());
+            catch (Exception e)
+            {
+                
+            }
         }
 
         public void Enqueue(ResponsePacket packet)

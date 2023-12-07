@@ -1,7 +1,5 @@
 ﻿using EchoServer.Extensions;
-using Microsoft.AspNetCore.SignalR;
 using System.Collections;
-using System.Net.WebSockets;
 
 namespace EchoServer.Queues
 {
