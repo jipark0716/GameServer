@@ -4,6 +4,7 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>89c1768e-a0b7-4640-9779-71dc26dbabb1</UserSecretsId>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(RunConfiguration)' == 'https' " />
@@ -17,4 +18,20 @@
     <ProjectReference Include="..\EchoServer\EchoServer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Services\" />
+    <None Remove="Packets\" />
+    <None Remove="Packets\Dtos\" />
+    <None Remove="Packets\Request\" />
+    <None Remove="Packets\Response\" />
+    <None Remove="JsonConverters\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Services\" />
+    <Folder Include="Packets\" />
+    <Folder Include="Packets\Dtos\" />
+    <Folder Include="Packets\Request\" />
+    <Folder Include="Packets\Response\" />
+    <Folder Include="JsonConverters\" />
+  </ItemGroup>
 </Project>

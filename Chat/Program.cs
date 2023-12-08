@@ -1,12 +1,10 @@
-﻿
-using Boostrap.DI;
+﻿using Boostrap.DI;
 using EchoServer.Services;
 
 namespace Chat;
 
 public class Program
 {
-
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);

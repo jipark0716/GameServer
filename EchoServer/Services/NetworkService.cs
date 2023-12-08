@@ -2,7 +2,6 @@
 using EchoServer.Factories;
 using EchoServer.Queues;
 using System.Collections.Concurrent;
-using ConcurrentCollections;
 using EchoServer.Application;
 
 namespace EchoServer.Services
@@ -28,7 +27,7 @@ namespace EchoServer.Services
             _responseQueue = new();
             _application = application;
             _topicService = topicService;
-            _application.Init(_responseQueue, _topicService);
+            _application.Init(_responseQueue);
 
             new Thread(ExecuteRequest).Start();
             new Thread(ExecuteResponse).Start();
@@ -88,7 +87,6 @@ namespace EchoServer.Services
         public virtual Task AddSession(T session)
         {
             _sessions.TryAdd(session.Uid, session);
-            _topicService.Subscript(session, 0);
             return Task.CompletedTask;
         }
     }

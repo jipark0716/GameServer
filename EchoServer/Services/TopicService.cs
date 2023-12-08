@@ -4,10 +4,15 @@ using System.Collections.Concurrent;
 
 namespace EchoServer.Services
 {
-    [LifeCycle(LifeCycle.Scoped)]
+    [LifeCycle(LifeCycle.Singleton)]
     public class TopicService
     {
+        public delegate void OnCloseHandler(ulong topicId);
+        public event OnCloseHandler? OnClose = null;
+
         private readonly ConcurrentDictionary<ulong, ConcurrentHashSet<ulong>> _topics;
+        private ulong _topicSequence = 0;
+        public ulong TopicSequence { get => ++_topicSequence; }
 
         public TopicService()
         {
@@ -21,6 +26,13 @@ namespace EchoServer.Services
                 return topic;
             }
             return defaultValue ?? Array.Empty<ulong>();
+        }
+
+        public ulong Subscript(Dtos.ISession session)
+        {
+            var topicId = TopicSequence;
+            Subscript(session, topicId);
+            return topicId;
         }
 
         public void Subscript(Dtos.ISession session, ulong topicId)
@@ -37,7 +49,7 @@ namespace EchoServer.Services
 
                 if (topic.Value.Count == 0)
                 {
-                    _topics.TryRemove(topic.Key, out _);
+                    CloseTopic(topic.Key);
                 }
             }
         }
@@ -53,7 +65,16 @@ namespace EchoServer.Services
 
             if (topic.Count == 0)
             {
-                _topics.TryRemove(topicId, out _);
+                CloseTopic(topicId);
+            }
+        }
+
+        public void CloseTopic(ulong topicId)
+        {
+            _topics.TryRemove(topicId, out _);
+            if (OnClose is not null)
+            {
+                OnClose(topicId);
             }
         }
     }

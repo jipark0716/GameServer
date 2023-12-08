@@ -6,6 +6,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using Boostrap.DI;
 using System.Reflection;
+using System.Threading.Tasks;
+using System.Net.Sockets;
 
 namespace EchoServer.Application
 {
@@ -13,7 +15,6 @@ namespace EchoServer.Application
     {
         protected DoubleBufferingQueue<ResponsePacket>? _responseQueue;
         protected JsonSerializerOptions? _jsonSerializerOptions;
-        protected TopicService? _topicService;
         protected readonly Dictionary<ushort, (Type Controller, MethodInfo Method)> Actions;
         protected readonly IServiceProvider _serviceProvider;
 
@@ -31,19 +32,18 @@ namespace EchoServer.Application
             }
         }
 
-        public void Init(DoubleBufferingQueue<ResponsePacket> responseQueue, TopicService topicService)
+        public void Init(DoubleBufferingQueue<ResponsePacket> responseQueue)
         {
-            Init(responseQueue, topicService, new()
+            Init(responseQueue, new()
             {
                 Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
                 WriteIndented = true
             });
         }
 
-        public void Init(DoubleBufferingQueue<ResponsePacket> responseQueue, TopicService topicService, JsonSerializerOptions jsonSerializerOptions)
+        public void Init(DoubleBufferingQueue<ResponsePacket> responseQueue, JsonSerializerOptions jsonSerializerOptions)
         {
             _responseQueue = responseQueue;
-            _topicService = topicService;
             _jsonSerializerOptions = jsonSerializerOptions;
         }
 
@@ -58,14 +58,45 @@ namespace EchoServer.Application
                 List<object?> parameters = new();
                 foreach (var parameter in action.Method.GetParameters())
                 {
-                    parameters.Add(JsonSerializer.Deserialize(packet.Body, parameter.ParameterType, _jsonSerializerOptions));
+                    if (parameter.ParameterType.IsAssignableFrom(typeof(Dtos.ISession)))
+                    {
+                        parameters.Add(packet.Session);
+                    }
+                    else
+                    {
+                        parameters.Add(JsonSerializer.Deserialize(packet.Body, parameter.ParameterType, _jsonSerializerOptions));
+                    }
                 }
                 var controller = _serviceProvider.GetRequiredService(action.Controller);
-                action.Method.Invoke(controller, parameters.ToArray());
+                Enqueue(action.Method.Invoke(controller, parameters.ToArray()));
             }
             catch (Exception e)
             {
                 
+            }
+        }
+
+        public async void Enqueue(object? obj)
+        {
+            switch (obj)
+            {
+                case ResponsePacket packet:
+                    Enqueue(packet);
+                    break;
+                case IEnumerable<ResponsePacket> packets:
+                    Enqueue(packets);
+                    break;
+                case Task<ResponsePacket> packet:
+                    Enqueue(await packet);
+                    break;
+                case Task<IEnumerable<ResponsePacket>> packets:
+                    Enqueue(await packets);
+                    break;
+                case IAsyncEnumerable<ResponsePacket> packets:
+                    await foreach (var packet in packets) Enqueue(packet);
+                    break;
+                default:
+                    break;
             }
         }
 
@@ -74,20 +105,12 @@ namespace EchoServer.Application
             (_responseQueue ?? throw new("resposne queue init 안됨")).EnQueue(packet);
         }
 
-        public void Enqueue(string payload, ITarget? target = null)
+        public void Enqueue(IEnumerable<ResponsePacket> packets)
         {
-            Enqueue(new ResponsePacket()
+            foreach (var packet in packets)
             {
-                Target = target ?? new BroadcastTarget(),
-                Payload = Encoding.UTF8.GetBytes(payload),
-            });
-        }
-
-        public void Enqueue(object payload, ITarget? target = null)
-        {
-            Enqueue(
-                JsonSerializer.Serialize(payload, _jsonSerializerOptions),
-                target);
+                Enqueue(packet);
+            }
         }
     }
 }
