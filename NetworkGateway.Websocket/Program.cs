@@ -9,7 +9,7 @@ namespace NetworkGateway.Websocket
             var app = builder.Build();
             app.UseWebSockets();
 
-            WebsocketConnectionService websocketConnectionService = new();
+            WebsocketConnectionService websocketConnectionService = new(new());
             app.Map("/", websocketConnectionService.Listener);
             app.Run();
         }

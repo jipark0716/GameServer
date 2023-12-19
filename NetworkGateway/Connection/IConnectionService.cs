@@ -17,7 +17,7 @@ public abstract class AConnectionService : IConnectionService
 
     }
 
-    public void AddConnection(IConnection connection)
+    public virtual void AddConnection(IConnection connection)
     {
         AddConnectionHandler(connection);
     }
