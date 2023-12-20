@@ -1,31 +1,35 @@
-﻿using ElectronNET.API;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Hosting;
+using ElectronNET.API;
 
-namespace TcpDebugger
+namespace TcpDebugger;
+public class Program
 {
-    internal class Program
+    public static void Main(string[] args)
     {
-        static void Main(string[] args)
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddControllers();
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddSwaggerGen();
+        builder.WebHost.UseElectron(args);
+        builder.Services.AddElectron();
+
+        var app = builder.Build();
+
+        if (app.Environment.IsDevelopment())
         {
-            var builder = WebApplication.CreateBuilder(args);
-            builder.WebHost.UseElectron(args);
-            Run(builder).Wait();
+            app.UseSwagger();
+            app.UseSwaggerUI();
         }
 
-        private static async Task Run(WebApplicationBuilder builder)
-        {
-            // Is optional, but you can use the Electron.NET API-Classes directly with DI (relevant if you wont more encoupled code)
-            builder.Services.AddElectron();
+        app.UseHttpsRedirection();
+        app.UseAuthorization();
+        app.MapControllers();
+        // app.Run();
+        app.StartAsync().Wait();
 
-            var app = builder.Build();
+        Electron.WindowManager.CreateWindowAsync("https://localhost:7161").Wait();
 
-            await app.StartAsync();
+        app.WaitForShutdown();
 
-            // Open the Electron-Window here
-            await Electron.WindowManager.CreateWindowAsync();
-
-            app.WaitForShutdown();
-        }
     }
 }
