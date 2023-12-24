@@ -17,8 +17,8 @@ public class WebsocketConnectionService(WebsocketConnectionFactory websocketConn
 
         using var webSocket = await context.WebSockets.AcceptWebSocketAsync();
         var connection = _websocketConnectionFactory.Create(webSocket);
-        await ReceiveMessage(connection);
         AddConnection(connection);
+        await ReceiveMessage(connection);
     }
     
     private async Task ReceiveMessage(WebsocketConnection connection)

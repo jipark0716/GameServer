@@ -22,6 +22,7 @@ public abstract class BaseConnection(ulong connectionId) : IConnection
 
     public void OnMessage(byte[] payload)
     {
-        OnMessageHandler(payload);
+        if (OnMessageHandler is not null)
+            OnMessageHandler(payload);
     }
 }

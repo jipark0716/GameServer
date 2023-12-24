@@ -11,7 +11,7 @@ namespace NetworkGateway.Dispatcher;
 public class Dispatcher(IQueue<ClientMessage> queue) : IDispatcher
 {
     private readonly IQueue<ClientMessage> _queue = queue;
-    private readonly ConcurrentDictionary<byte, IServerNode> _serverNodes = [];
+    private readonly BlockingCollection<IServerNode> _serverNodes = [];
     private readonly SessionFactory _sessionFactory = new();
 
     public void Start()
@@ -19,7 +19,7 @@ public class Dispatcher(IQueue<ClientMessage> queue) : IDispatcher
         Task.Run(() => _queue.Each(Dispatch));
     }
 
-    public bool AddServer(IServerNode serverNode) => _serverNodes.TryAdd(serverNode.ServerId, serverNode);
+    public bool AddServer(IServerNode serverNode) => _serverNodes.TryAdd(serverNode);
 
     public void AddSession(IConnection connection, ISession session)
     {
@@ -50,10 +50,8 @@ public class Dispatcher(IQueue<ClientMessage> queue) : IDispatcher
 
     protected void Dispatch(ClientMessage message)
     {
-        if (_serverNodes.TryGetValue(message.ServerId, out var serverNode) is false)
-        {
-            return;
-        }
-        serverNode.Send(message.GetByte());
+        _serverNodes
+            .Where(o => o.ServerId == message.ServerId)
+            .Each(o => o.Send(message.GetByte()));
     }
 }

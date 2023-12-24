@@ -11,6 +11,10 @@ namespace NetworkGateway.Websocket
 
             WebsocketConnectionService websocketConnectionService = new(new());
             app.Map("/", websocketConnectionService.Listener);
+            Task.Run(() =>
+            {
+                new Server(websocketConnectionService).Start();
+            });
             app.Run();
         }
     }
