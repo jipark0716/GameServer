@@ -11,5 +11,6 @@ public interface IDispatcher
     public void AddSession(IConnection connection, ISession session);
     public void OnClientMessage(IConnection connection, byte[] payload);
     public bool AddServer(IServerNode serverNode);
+    public void Disconnect(IConnection connection);
 
 }

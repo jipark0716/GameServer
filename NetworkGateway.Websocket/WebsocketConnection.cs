@@ -9,6 +9,7 @@ public class WebsocketConnection(ulong connectionId, WebSocket websocket) : Base
 
     public override void Close()
     {
+        base.Close();
         Websocket.Dispose();
     }
 

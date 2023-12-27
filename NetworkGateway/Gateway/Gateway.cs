@@ -8,33 +8,21 @@ using Common.Extensions;
 
 namespace NetworkGateway.Gateway;
 
-public class Gateway
+public class Gateway(IDispatcher dispatcher, IQueue<ServerMessage> serverMessageQueue)
 {
     public delegate void OnAddSession(IConnection connection, ISession session);
-    public event OnAddSession OnAddSessionHandler;
     public delegate void OnClientMessage(IConnection connection, byte[] payload);
-    public event OnClientMessage OnClientMessageHandler;
 
-    private readonly IQueue<ServerMessage> _serverMessageQueue;
-    private readonly ConcurrentDictionary<ulong, IConnection> _connections;
-    
-    public Gateway(IDispatcher dispatcher, IQueue<ServerMessage> serverMessageQueue)
-    {
-        _connections = new();
-        _serverMessageQueue = serverMessageQueue;
-        OnAddSessionHandler += dispatcher.AddSession;
-        OnClientMessageHandler += dispatcher.OnClientMessage;
-    }
+    private readonly IQueue<ServerMessage> _serverMessageQueue = serverMessageQueue;
+    private readonly ConcurrentDictionary<ulong, IConnection> _connections = new();
+    private readonly IDispatcher _dispatcher = dispatcher;
 
-    public void Start()
-    {
-        Task.Run(() => _serverMessageQueue.Each(OnServerMessage));
-    }
+    public void Start() => Task.Run(() => _serverMessageQueue.Each(OnServerMessage));
 
     public void OnServerMessage(ServerMessage serverMessage)
     {
         var header = serverMessage.Payload[0];
-        var body = serverMessage.Payload[0..];
+        var body = serverMessage.Payload[1..];
         switch (header)
         {
             case 0:
@@ -56,7 +44,12 @@ public class Gateway
 
     public void AddConnection(IConnection connection)
     {
-        connection.OnMessageHandler += (byte[] payload) => OnClientMessageHandler(connection, payload);
+        connection.OnMessageHandler += (byte[] payload) => _dispatcher.OnClientMessage(connection, payload);
+        connection.OnCLose += () =>
+        {
+            _dispatcher.Disconnect(connection);
+            _connections.Remove(connection.ConnectionId, out _);
+        };
         _connections.TryAdd(connection.ConnectionId, connection);
     }
 }

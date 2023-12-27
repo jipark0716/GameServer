@@ -17,7 +17,7 @@ public class TcpConnectionService : AConnectionService
     }
 
 
-    public void Start()
+    public override void Start()
     {
         _listener.Listen();
         Task.Run(() =>
@@ -39,7 +39,15 @@ public class TcpConnectionService : AConnectionService
     private void ReceiveMessage(TcpConnection connection)
     {
         var buffer = new byte[1024 * 4];
-        int payloadSize;
+        int payloadSize = connection.Socket.Receive(buffer);
+
+        var userId = Authrize(buffer[..payloadSize]);
+        if (userId is null)
+        {
+            connection.Close();
+            return;
+        }
+        connection.UserId = (ulong)userId;
 
         while (true)
         {
@@ -49,7 +57,7 @@ public class TcpConnectionService : AConnectionService
             }
             catch (Exception)
             {
-                break; ;
+                break;
             }
             connection.OnMessage(buffer[..payloadSize]);
         };

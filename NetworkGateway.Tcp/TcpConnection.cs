@@ -9,6 +9,7 @@ public class TcpConnection(ulong connectionId, Socket socket) : BaseConnection(c
 
     public override void Close()
     {
+        base.Close();
         Socket.Dispose();
     }
 

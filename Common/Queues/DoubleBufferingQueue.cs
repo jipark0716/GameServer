@@ -18,7 +18,7 @@ public class DoubleBufferingQueue<T> : IQueue<T>
         });
     }
 
-    public Queue<T> TaksAll()
+    public Queue<T> TakeAll()
     {
         Swap();
         return _outQueue;
@@ -34,7 +34,7 @@ public class DoubleBufferingQueue<T> : IQueue<T>
         Queue<T> packetQueue;
         while (true)
         {
-            packetQueue = TaksAll();
+            packetQueue = TakeAll();
             if (packetQueue.Count == 0)
             {
                 Thread.Sleep(Cycle);
