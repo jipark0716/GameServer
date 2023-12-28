@@ -9,7 +9,7 @@ using pb = global::Google.Protobuf;
 using pbc = global::Google.Protobuf.Collections;
 using pbr = global::Google.Protobuf.Reflection;
 using scg = global::System.Collections.Generic;
-namespace GameNode.Packets.Proto {
+namespace GameNode.Packets {
 
   /// <summary>Holder for reflection information generated from sample.proto</summary>
   public static partial class SampleReflection {
@@ -25,12 +25,12 @@ namespace GameNode.Packets.Proto {
       byte[] descriptorData = global::System.Convert.FromBase64String(
           string.Concat(
             "CgxzYW1wbGUucHJvdG8iOwoGU2FtcGxlEgoKAmlkGAEgASgFEhIKCmZpcnN0",
-            "X25hbWUYAiABKAkSEQoJbGFzdF9uYW1lGAMgASgJQhmqAhZHYW1lTm9kZS5Q",
-            "YWNrZXRzLlByb3RvYgZwcm90bzM="));
+            "X25hbWUYAiABKAkSEQoJbGFzdF9uYW1lGAMgASgJQhOqAhBHYW1lTm9kZS5Q",
+            "YWNrZXRzYgZwcm90bzM="));
       descriptor = pbr::FileDescriptor.FromGeneratedCode(descriptorData,
           new pbr::FileDescriptor[] { },
           new pbr::GeneratedClrTypeInfo(null, null, new pbr::GeneratedClrTypeInfo[] {
-            new pbr::GeneratedClrTypeInfo(typeof(global::GameNode.Packets.Proto.Sample), global::GameNode.Packets.Proto.Sample.Parser, new[]{ "Id", "FirstName", "LastName" }, null, null, null, null)
+            new pbr::GeneratedClrTypeInfo(typeof(global::GameNode.Packets.Sample), global::GameNode.Packets.Sample.Parser, new[]{ "Id", "FirstName", "LastName" }, null, null, null, null)
           }));
     }
     #endregion
@@ -52,7 +52,7 @@ namespace GameNode.Packets.Proto {
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]
     [global::System.CodeDom.Compiler.GeneratedCode("protoc", null)]
     public static pbr::MessageDescriptor Descriptor {
-      get { return global::GameNode.Packets.Proto.SampleReflection.Descriptor.MessageTypes[0]; }
+      get { return global::GameNode.Packets.SampleReflection.Descriptor.MessageTypes[0]; }
     }
 
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute]

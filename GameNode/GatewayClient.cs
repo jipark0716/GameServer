@@ -2,8 +2,35 @@
 using System.Net.Sockets;
 using GameNode.Packets;
 using Common.Extensions;
+using GameNode.Session;
+using GameNode.Listener;
 
 namespace GameNode;
+
+public class Client
+{
+    private readonly GatewayClient _gatewayClient;
+    private readonly Dispatcher.Dispatcher _dispatcher;
+    private SessionService _sessionService;
+    private readonly DoubleBufferingQueue<ServerMessage> _serverMessageQueue = [];
+    private readonly DoubleBufferingQueue<ClientMessage> _clientMessageQueue = [];
+    public Client(byte serverId)
+    {
+        _sessionService = new();
+        _gatewayClient = new(serverId, _clientMessageQueue, _serverMessageQueue);
+        _dispatcher = new(_clientMessageQueue, _sessionService);
+    }
+
+    public void AddEventListener<T>(Func<IQueue<ClientMessage>, T> func)
+        where T : BaseListener
+        => _dispatcher.AddEventListener(func(_clientMessageQueue));
+
+    public void Start()
+    {
+        _gatewayClient.Start();
+        _dispatcher.Start();
+    }
+}
 
 public class GatewayClient(byte serverId, IQueue<ClientMessage> clientMessageQueue, IQueue<ServerMessage> serverMessageQueue) : IDisposable
 {

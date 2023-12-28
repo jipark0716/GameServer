@@ -30,7 +30,14 @@ public class TcpServerNodeService : IServerNodeService
                 Socket handler = _listener.Accept();
                 Task.Run(() =>
                 {
-                    AddServerNode(handler);
+                    try
+                    {
+                        AddServerNode(handler);
+                    }
+                    catch (Exception ex) // 의도치 않은 연결 종료
+                    {
+
+                    }
                     handler.Disconnect(false);
                     handler.Close();
                 });

@@ -23,7 +23,7 @@ public class Dispatcher(IQueue<ClientMessage> queue) : IDispatcher
 
     public void AddSession(IConnection connection, ISession session)
     {
-        var payload = new byte[14];
+        var payload = new byte[10];
         BitConverter.GetBytes((ushort)0).CopyTo(payload, 0);
         BitConverter.GetBytes(connection.UserId).CopyTo(payload, 2);
         _queue.EnQueue(new()
