@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Network", "Network\Network.csproj", "{E93FC5FA-F88C-41F1-A43E-E29F000B0CD9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chat", "Chat\Chat.csproj", "{F7241B83-B009-44AC-BF57-58E572D3AE7E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Util", "Util\Util.csproj", "{F24EC5FF-DD4A-4FAE-9141-3E4628731C39}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E93FC5FA-F88C-41F1-A43E-E29F000B0CD9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E93FC5FA-F88C-41F1-A43E-E29F000B0CD9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E93FC5FA-F88C-41F1-A43E-E29F000B0CD9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E93FC5FA-F88C-41F1-A43E-E29F000B0CD9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F7241B83-B009-44AC-BF57-58E572D3AE7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F7241B83-B009-44AC-BF57-58E572D3AE7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F7241B83-B009-44AC-BF57-58E572D3AE7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F7241B83-B009-44AC-BF57-58E572D3AE7E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F24EC5FF-DD4A-4FAE-9141-3E4628731C39}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F24EC5FF-DD4A-4FAE-9141-3E4628731C39}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F24EC5FF-DD4A-4FAE-9141-3E4628731C39}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F24EC5FF-DD4A-4FAE-9141-3E4628731C39}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
