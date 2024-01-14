@@ -3,12 +3,12 @@ using Network.Sockets;
 
 namespace Network.Packets;
 
-public class ClientMessage(ulong connectionId, Socket socket, MessageType messageType, byte[]? payload = null)
+public class ClientMessage(ulong connectionId, Socket socket, MessageType type, byte[]? payload = null)
 {
     public readonly ulong ConnectionId = connectionId;
     public readonly Socket Socket = socket;
     public readonly byte[]? Payload = payload;
-    public readonly MessageType MessageType = messageType;
+    public readonly MessageType Type = type;
 }
 
 public enum MessageType : byte

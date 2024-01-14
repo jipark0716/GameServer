@@ -1,6 +1,6 @@
 namespace Chat.Packets.Messages;
 
-public class SendResponse
+public class SendResponse(Message message)
 {
-    public required Message Message { get; set; }
+    public Message Message { get; } = message;
 }

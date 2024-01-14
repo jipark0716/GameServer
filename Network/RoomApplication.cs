@@ -36,9 +36,8 @@ public abstract class RoomApplication : Application
     {
         var room = Create(_roomSequence++, request);
         if (_rooms.TryAdd(room.Id, room) is false) return;
-        
-        room.AddUser(id, socket, true);
-        if (_users.TryAdd(id, room.Id) is false) return;
+
+        RoomJoin(id, socket, room);
         
         SendCreateRoomResponse(socket, room);
     }
@@ -46,8 +45,7 @@ public abstract class RoomApplication : Application
     protected virtual void SendCreateRoomResponse(Socket socket, Room room)
     {
         socket.SendAsync(
-            new CreateResponse(room.Id).ToJsonByte(),
-            SocketFlags.Peek);
+            new CreateResponse(room.Id).Encapsuleation(1000));
     }
 
     private void LeaveRoom(ulong userId)
@@ -71,28 +69,33 @@ public abstract class RoomApplication : Application
         }
     }
 
+    private void RoomJoin(ulong id, Socket socket, Room room)
+    {
+        if (_users.TryGetValue(id, out var roomId))
+        {
+            // 다른방에 포함되어 있으면 이전방 나가기
+            _users[id] = room.Id;
+            LeaveRoom(id, roomId);
+        }
+        _users.Add(id, room.Id);
+        room.AddUser(id, socket);
+    }
+
     public void RoomJoin([ID] ulong id, [Socket] Socket socket, [JsonBody] JoinRequest request)
     {
-        if (_rooms.TryGetValue(request.RoomID, out var room) is false)
+        if (_rooms.TryGetValue(request.Id, out var room) is false)
         {
             // 방 없을때
             return;
         }
-
+        
         if (RoomAuthenticate(room, request) is false)
         {
             // 인증 실패
             return;
         }
-        
-        if (_users.TryGetValue(id, out var roomId))
-        {
-            // 다른방에 포함되어 있으면 이전방 나가기
-            _users[id] = request.RoomID;
-            LeaveRoom(id, roomId);
-        }
-        _users.Add(id, request.RoomID);
-        room.AddUser(id, socket);
+
+        RoomJoin(id, socket, room);
     }
 
     protected virtual bool RoomAuthenticate(Room room, JoinRequest request) => true;

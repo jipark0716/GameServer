@@ -1,4 +1,4 @@
-using System.Diagnostics.Contracts;
+using System.Net.Sockets;
 using Network.EventListeners;
 using Network.Packets;
 using Network.Sockets;
@@ -26,30 +26,57 @@ public abstract class Application
     
     protected virtual void OnDisconnect(ulong id) {}
 
+    private IEnumerable<(ushort, byte[])> ChunkStream(byte[]? payload)
+    {
+        ObjectDisposedException.ThrowIf(
+            payload is null,
+            new ArgumentNullException("payload is must not null"));
+
+        while (payload.Length >= 4)
+        {
+            (ushort, byte[]) result;
+            try
+            {
+                var length = BitConverter.ToUInt16(payload.AsSpan()[2..4]);
+                result = (BitConverter.ToUInt16(payload.AsSpan()[..2]), payload[4..(length + 4)]);
+                payload = payload[(length + 4)..];
+            }
+            catch (Exception e)
+            {
+                continue;
+            }
+            yield return result;
+        }
+    }
+
+    protected virtual void OnConnect(Socket socket, ulong connectionId)
+        => socket.SendAsync(new HelloPacket(connectionId).Encapsuleation(100));
+
     private void OnMessage(ClientMessage message)
     {
-        if (message.MessageType is MessageType.Disconnect) // 연결 끊기 패킷
+        switch (message.Type)
         {
-            OnDisconnect(message.ConnectionId);
-            return;
-        }
-        
-        if (message.Payload is null || message.Payload.Length < 2)
-        {
-            return;
-        }
-
-        try
-        {
-            Listener.OnMessage(
-                BitConverter.ToUInt16(message.Payload.AsSpan()[..2]),
-                message.ConnectionId,
-                message.Socket,
-                message.Payload[2..]);
-        }
-        catch (Exception e)
-        {
-            // ignored
+            case MessageType.Disconnect:
+                OnDisconnect(message.ConnectionId);
+                break;
+            case MessageType.Connect:
+                OnConnect(message.Socket, message.ConnectionId);
+                break;
+            case MessageType.Message:
+                foreach (var (actionType, body) in ChunkStream(message.Payload))
+                {
+                    try
+                    {
+                        Listener.OnMessage(actionType, message.ConnectionId, message.Socket, body);
+                    }
+                    catch (Exception e)
+                    {
+                        // ignored
+                    }
+                }
+                break;
+            default:
+                throw new InvalidOperationException($"not support type {message.Type}");
         }
     }
 }

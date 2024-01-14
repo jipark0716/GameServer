@@ -5,7 +5,7 @@ public class CreateRequest
     public required string Name { get; set; }
 }
 
-public class CreateResponse(ulong roomId) : ResponsePacket(1000)
+public class CreateResponse(ulong roomId)
 {
     public ulong RoomId { get; set; } = roomId;
 }

@@ -28,4 +28,19 @@ public static class EnumerableExtension
             }
         } 
     }
+
+    public static T[] Merge<T>(this T[] source, params T[][]targets)
+    {
+        var result = new T[source.Length + targets.Sum(o => o.Length)];
+        Buffer.BlockCopy(source, 0, result, 0, source.Length);
+
+        var startIndex = source.Length;
+        foreach (var target in targets)
+        {
+            Buffer.BlockCopy(target, 0, result, startIndex, target.Length);
+            startIndex += target.Length;
+        }
+        
+        return result;
+    }
 }

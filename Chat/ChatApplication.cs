@@ -1,3 +1,4 @@
+using System.Net.Sockets;
 using Network;
 using Network.Packets.Room;
 using Network.Rooms;
@@ -10,5 +11,7 @@ public class ChatApplication : RoomApplication
         => Listener.Instance = this;
     
     protected override Room Create(ulong roomId, CreateRequest request)
-        => new ChatRoom(roomId);
+        => new ChatRoom(roomId, request.Name);
+    
+    protected override void SendCreateRoomResponse(Socket socket, Room room) {}
 }
