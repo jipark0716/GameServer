@@ -3,9 +3,10 @@ WORKDIR /App
 
 COPY ./ ./
 RUN dotnet restore
-gi
+RUN dotnet publish "AuthApi/AuthApi.csproj" -c Release -o out
+
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
 WORKDIR /App
 COPY --from=build-env /App/out .
-ENTRYPOINT ["dotnet", "AuthApi/DotNet.Docker.dll"]
+ENTRYPOINT ["dotnet", "AuthApi.dll"]
