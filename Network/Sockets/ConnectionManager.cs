@@ -1,15 +1,16 @@
 using System.Net;
 using System.Net.Sockets;
 using Network.Packets;
+using Util.Extensions;
 
 namespace Network.Sockets;
 
-public class ConnectionManager
+public class ConnectionManager : IDisposable
 {
     private readonly IPEndPoint _endpoint;
     private readonly Socket _server;
     private readonly SocketEventPool _socketEventPool;
-    private readonly Dictionary<ulong, Socket> _connections;
+    private readonly Dictionary<ulong, Author> _connections;
     private readonly Queue<ClientMessage> _messageQueue;
     private ulong _connectionSequence;
 
@@ -62,10 +63,10 @@ public class ConnectionManager
     private void OnConnect(SocketAsyncEventArgs e)
     {
         var readEventArgs = _socketEventPool.Pop();
-        var (id, socket) = (ConnectionId, e.AcceptSocket ?? throw new InvalidOperationException());
-        readEventArgs.UserToken = (id, socket);
-        _messageQueue.Enqueue(new ClientMessage(id, socket, MessageType.Connect));
-        _connections.Add(id, socket);
+        Author author = new(ConnectionId, e.AcceptSocket ?? throw new InvalidOperationException());
+        readEventArgs.UserToken = author;
+        _messageQueue.Enqueue(new ClientMessage(author, MessageType.Connect));
+        _connections.Add(author.ConnectionId, author);
 
         if (e.AcceptSocket.ReceiveAsync(readEventArgs) is false)
         {
@@ -93,8 +94,10 @@ public class ConnectionManager
         if (e.BytesTransferred > 0 & e.SocketError == SocketError.Success)
         {
             var payload = e.Buffer?[..e.BytesTransferred];
-            var (id, socket) = ((ulong, Socket))(e.UserToken ?? throw new InvalidOperationException());
-            _messageQueue.Enqueue(new(id, socket, MessageType.Message, payload));
+
+            var author = (Author)e.UserToken;
+
+            _messageQueue.Enqueue(new(author, MessageType.Message, payload));
             ProcessSend(e);
             return;
         }
@@ -105,8 +108,8 @@ public class ConnectionManager
     {
         if (e.SocketError == SocketError.Success)
         {
-            var (_, socket) = ((ulong, Socket))(e.UserToken ?? throw new InvalidOperationException());
-            if (socket.ReceiveAsync(e) is false)
+            var author = (Author)e.UserToken;
+            if (author.Socket.ReceiveAsync(e) is false)
                 OnReceiveMessage(e);
             return;
         }
@@ -115,21 +118,27 @@ public class ConnectionManager
 
     private void OnCloseClientSocket(SocketAsyncEventArgs e)
     {
-        var (id, socket) = ((ulong, Socket))(e.UserToken ?? throw new InvalidOperationException());
+        var author = (Author)e.UserToken;
 
         try
         {
-            socket.Shutdown(SocketShutdown.Send);
+            author.Socket.Shutdown(SocketShutdown.Send);
         }
         catch (Exception)
         {
             // ignored
         }
 
-        socket.Close();
+        author.Socket.Close();
 
         _socketEventPool.Push(e);
-        _connections.Remove(id);
-        _messageQueue.Enqueue(new(id, socket, MessageType.Disconnect));
+        _connections.Remove(author.ConnectionId);
+        _messageQueue.Enqueue(new(author, MessageType.Disconnect));
+    }
+
+    public void Dispose()
+    {
+        _connections.Each(o => o.Value.Socket.Close());
+        _server.Dispose();
     }
 }

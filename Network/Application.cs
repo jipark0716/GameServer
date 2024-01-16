@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Network.Attributes;
 using Network.EventListeners;
 using Network.Packets;
 using Network.Sockets;
@@ -15,7 +16,15 @@ public abstract class Application
     protected Application(int maxConnections, int port)
     {
         Listener = new(this);
+        Listener.AddAction(100, nameof(Authorization));
         _connectionManager = new(_clientMessageQueue, maxConnections, port);
+    }
+
+    public void Authorization([Author] Author author, [JsonBody] AuthorizeRequestDto request)
+    {
+        author.UserId = request.UserId;
+        AuthorizeResponseDto response = new(author.UserId ?? throw new Exception("user id is null"));
+        author.Socket.SendAsync(response.Encapsuleation(101));
     }
 
     public Task StartAsync() => Task.Run(() =>
@@ -57,17 +66,17 @@ public abstract class Application
         switch (message.Type)
         {
             case MessageType.Disconnect:
-                OnDisconnect(message.ConnectionId);
+                OnDisconnect(message.Author.ConnectionId);
                 break;
             case MessageType.Connect:
-                OnConnect(message.Socket, message.ConnectionId);
+                OnConnect(message.Author.Socket, message.Author.ConnectionId);
                 break;
             case MessageType.Message:
                 foreach (var (actionType, body) in ChunkStream(message.Payload))
                 {
                     try
                     {
-                        Listener.OnMessage(actionType, message.ConnectionId, message.Socket, body);
+                        Listener.OnMessage(actionType, message.Author, body);
                     }
                     catch (Exception e)
                     {

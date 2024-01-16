@@ -1,5 +1,7 @@
 using System.Net.Sockets;
 using Network.Attributes;
+using Network.EventListeners;
+using Network.Packets;
 using Util.Extensions;
 using Network.Packets.Room;
 using Network.Rooms;
@@ -14,32 +16,34 @@ public abstract class RoomApplication : Application
     
     protected RoomApplication(int maxConnections, int port): base(maxConnections, port)
     {
+        AuthorizeMiddleware middleware = new();
+        
         Listener.Instance = this;
-        Listener.AddAction(1000, nameof(CreateRoom));
-        Listener.AddAction(1001, nameof(RoomJoin));
+        Listener.AddAction(1000, nameof(CreateRoom), middleware);
+        Listener.AddAction(1001, nameof(RoomJoin), middleware);
         Listener.DefaultAction = OnRoomMessage;
     }
 
     protected override void OnDisconnect(ulong id)
         => LeaveRoom(id);
 
-    private void OnRoomMessage(ushort actionType, ulong id, Socket socket, byte[] body)
+    private void OnRoomMessage(ushort actionType, Author author, byte[] body)
     {
-        if (_users.TryGetValue(id, out var roomId) is false) return;
+        if (_users.TryGetValue(author.ConnectionId, out var roomId) is false) return;
         if (_rooms.TryGetValue(roomId, out var room) is false) return;
-        room.OnMessage(actionType, id, socket, body);
+        room.OnMessage(actionType, author, body);
     }
 
     protected abstract Room Create(ulong roomId, CreateRequest request);
 
-    public void CreateRoom([ID] ulong id, [Socket] Socket socket, [JsonBody] CreateRequest request)
+    public void CreateRoom([Author] Author author, [JsonBody] CreateRequest request)
     {
         var room = Create(_roomSequence++, request);
         if (_rooms.TryAdd(room.Id, room) is false) return;
 
-        RoomJoin(id, socket, room);
+        RoomJoin(author, room);
         
-        SendCreateRoomResponse(socket, room);
+        SendCreateRoomResponse(author.Socket, room);
     }
 
     protected virtual void SendCreateRoomResponse(Socket socket, Room room)
@@ -69,19 +73,22 @@ public abstract class RoomApplication : Application
         }
     }
 
-    private void RoomJoin(ulong id, Socket socket, Room room)
+    private void RoomJoin(Author author, Room room)
     {
-        if (_users.TryGetValue(id, out var roomId))
+        if (_users.TryGetValue(author.ConnectionId, out var roomId))
         {
             // 다른방에 포함되어 있으면 이전방 나가기
-            _users[id] = room.Id;
-            LeaveRoom(id, roomId);
+            _users[author.ConnectionId] = room.Id;
+            LeaveRoom(author.ConnectionId, roomId);
         }
-        _users.Add(id, room.Id);
-        room.AddUser(id, socket);
+        else
+        {
+            _users.Add(author.ConnectionId, room.Id);
+        }
+        room.AddUser(author);
     }
 
-    public void RoomJoin([ID] ulong id, [Socket] Socket socket, [JsonBody] JoinRequest request)
+    public void RoomJoin([Author] Author author, [JsonBody] JoinRequest request)
     {
         if (_rooms.TryGetValue(request.Id, out var room) is false)
         {
@@ -95,7 +102,7 @@ public abstract class RoomApplication : Application
             return;
         }
 
-        RoomJoin(id, socket, room);
+        RoomJoin(author, room);
     }
 
     protected virtual bool RoomAuthenticate(Room room, JoinRequest request) => true;

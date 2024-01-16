@@ -5,11 +5,7 @@ public abstract class ListenerParameterAttribute : Attribute
 {
 }
 
-public class IDAttribute : ListenerParameterAttribute
-{
-}
-
-public class SocketAttribute : ListenerParameterAttribute
+public class AuthorAttribute : ListenerParameterAttribute
 {
 }
 

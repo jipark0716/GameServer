@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using Network.EventListeners;
+using Network.Packets;
 using Network.Packets.Room;
 using Util.Extensions;
 
@@ -9,7 +10,7 @@ public abstract class Room
 {
     public readonly ulong Id;
     public readonly string Name;
-    protected readonly Dictionary<ulong, Socket> Users = new();
+    protected readonly Dictionary<ulong, Author> Users = new();
     protected readonly OnClientMessageListener Listener;
 
     protected Room(ulong id, string name)
@@ -31,25 +32,26 @@ public abstract class Room
         return Users.Count == 0;
     }
 
-    public virtual void AddUser(ulong id, Socket socket)
+    public virtual void AddUser(Author author)
     {
-        Users.Add(id, socket);
-        Send(new OnJoin(id).Encapsuleation(1002), id);
+        var userId = (ulong)author.UserId!;
+        Users.Add(userId, author);
+        Send(new OnJoin(userId).Encapsuleation(1002), userId);
     }
 
-    public void OnMessage(ushort actionType, ulong id, Socket socket, byte[] body)
-        => Listener.OnMessage(actionType, id, socket, body);
+    public void OnMessage(ushort actionType, Author author, byte[] body)
+        => Listener.OnMessage(actionType, author, body);
 
     protected Task Send(byte[] payload) => Task.WhenAll(
         Users.Select(
             o 
-                => o.Value.SendAsync(payload))
+                => o.Value.Socket.SendAsync(payload))
     );
     
     protected Task Send(byte[] payload, ulong id) => Task.WhenAll(
         Users.Where(o => o.Key != id).Select(
             o 
-                => o.Value.SendAsync(payload))
+                => o.Value.Socket.SendAsync(payload))
     );
 
     protected virtual RoomDto CreateRoomPacket()

@@ -1,6 +1,6 @@
-using System.Net.Sockets;
 using Chat.Packets.Messages;
 using Network.Attributes;
+using Network.Packets;
 using Network.Rooms;
 using Util.Extensions;
 using JoinResponse = Chat.Packets.Messages.JoinResponse;
@@ -14,15 +14,16 @@ public class ChatRoom : Room
     
     public ChatRoom(ulong id, string name) : base(id, name)
     {
-        Listener.Instance = this;
         Listener.AddAction(2000, nameof(SendMessage));
+        Listener.Instance = this;
     }
     
-    public void SendMessage([ID] ulong id, [Socket] Socket socket, [JsonBody] SendRequest request)
+    public void SendMessage([Author] Author author, [JsonBody] SendRequest request)
     {
+        var userId = (ulong)author.UserId!;
         Message message = new()
         {
-            Author = id,
+            Author = userId,
             MessageId = _messageSequence++,
             Type = request.Type,
             Content = request.Content
@@ -31,9 +32,9 @@ public class ChatRoom : Room
         Send(new SendResponse(message).Encapsuleation(2000));
     }
 
-    public override void AddUser(ulong id, Socket socket)
+    public override void AddUser(Author author)
     {
-        base.AddUser(id, socket);
-        socket.SendAsync(new JoinResponse(CreateRoomPacket(), _messages).Encapsuleation(1001));
+        base.AddUser(author);
+        author.Socket.SendAsync(new JoinResponse(CreateRoomPacket(), _messages).Encapsuleation(1001));
     }
 }

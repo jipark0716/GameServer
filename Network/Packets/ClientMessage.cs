@@ -1,14 +1,19 @@
 using System.Net.Sockets;
-using Network.Sockets;
 
 namespace Network.Packets;
 
-public class ClientMessage(ulong connectionId, Socket socket, MessageType type, byte[]? payload = null)
+public class ClientMessage(Author author, MessageType type, byte[]? payload = null)
 {
-    public readonly ulong ConnectionId = connectionId;
-    public readonly Socket Socket = socket;
+    public readonly Author Author = author;
     public readonly byte[]? Payload = payload;
     public readonly MessageType Type = type;
+}
+
+public class Author(ulong connectionId, Socket socket)
+{
+    public readonly ulong ConnectionId = connectionId;
+    public ulong? UserId;
+    public readonly Socket Socket = socket;
 }
 
 public enum MessageType : byte
