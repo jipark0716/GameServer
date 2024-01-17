@@ -1,8 +1,11 @@
 using System.Net.Sockets;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
 using Network.Attributes;
 using Network.EventListeners;
 using Network.Packets;
 using Network.Sockets;
+using Serilog;
 using Util.Extensions;
 
 namespace Network;
@@ -50,7 +53,13 @@ public abstract class Application
     }
 
     protected virtual void OnConnect(Socket socket, ulong connectionId)
-        => socket.SendAsync(new HelloPacket(connectionId).Encapsuleation(100));
+    {
+        Log.Information(
+            "[{connectionId}] connect ip:{ip}",
+            connectionId,
+            socket.RemoteEndPoint?.ToString());
+        socket.SendAsync(new HelloPacket(connectionId).Encapsuleation(100));
+    }
 
     private void OnMessage(ClientMessage message)
     {
@@ -71,9 +80,24 @@ public abstract class Application
                         {
                             Listener.OnMessage(actionType, message.Author, body);
                         }
+                        catch (SecurityTokenMalformedException)
+                        {
+                            Log.Information(
+                                "[{connectionId}] auth fail id:{id} type:{type} request:{body}",
+                                message.Author.ConnectionId, 
+                                message.Author.UserId,
+                                actionType,
+                                Encoding.Default.GetString(body));
+                        }
                         catch (Exception e)
                         {
-                            // ignored
+                            Log.Error(
+                                e,
+                                "[{connectionId}] action fail id:{id} type:{type} request:{body}",
+                                message.Author.ConnectionId,
+                                message.Author.UserId,
+                                actionType,
+                                Encoding.Default.GetString(body));
                         }
                     }
 
@@ -84,7 +108,10 @@ public abstract class Application
         }
         catch (Exception e)
         {
-            // ignored
+            Log.Error(e, 
+                "[{connectionId}] request parse fail id:{Id}",
+                message.Author.ConnectionId,
+                message.Author.UserId);
         }
     }
 }
