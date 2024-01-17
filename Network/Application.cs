@@ -20,9 +20,9 @@ public abstract class Application
         _connectionManager = new(_clientMessageQueue, maxConnections, port);
     }
 
-    public void Authorization([Author] Author author, [JsonBody] AuthorizeRequestDto request)
+    public void Authorization([Author] Author author, [Jwt] AuthorizeRequestDto request)
     {
-        author.UserId = request.UserId;
+        author.UserId = request.Id;
         AuthorizeResponseDto response = new(author.UserId ?? throw new Exception("user id is null"));
         author.Socket.SendAsync(response.Encapsuleation(101));
     }
@@ -43,18 +43,9 @@ public abstract class Application
 
         while (payload.Length >= 4)
         {
-            (ushort, byte[]) result;
-            try
-            {
-                var length = BitConverter.ToUInt16(payload.AsSpan()[2..4]);
-                result = (BitConverter.ToUInt16(payload.AsSpan()[..2]), payload[4..(length + 4)]);
-                payload = payload[(length + 4)..];
-            }
-            catch (Exception e)
-            {
-                continue;
-            }
-            yield return result;
+            var length = BitConverter.ToUInt16(payload.AsSpan()[2..4]);
+            yield return (BitConverter.ToUInt16(payload.AsSpan()[..2]), payload[4..(length + 4)]);
+            payload = payload[(length + 4)..];
         }
     }
 
@@ -63,29 +54,37 @@ public abstract class Application
 
     private void OnMessage(ClientMessage message)
     {
-        switch (message.Type)
+        try
         {
-            case MessageType.Disconnect:
-                OnDisconnect(message.Author.ConnectionId);
-                break;
-            case MessageType.Connect:
-                OnConnect(message.Author.Socket, message.Author.ConnectionId);
-                break;
-            case MessageType.Message:
-                foreach (var (actionType, body) in ChunkStream(message.Payload))
-                {
-                    try
+            switch (message.Type)
+            {
+                case MessageType.Disconnect:
+                    OnDisconnect(message.Author.ConnectionId);
+                    break;
+                case MessageType.Connect:
+                    OnConnect(message.Author.Socket, message.Author.ConnectionId);
+                    break;
+                case MessageType.Message:
+                    foreach (var (actionType, body) in ChunkStream(message.Payload))
                     {
-                        Listener.OnMessage(actionType, message.Author, body);
+                        try
+                        {
+                            Listener.OnMessage(actionType, message.Author, body);
+                        }
+                        catch (Exception e)
+                        {
+                            // ignored
+                        }
                     }
-                    catch (Exception e)
-                    {
-                        // ignored
-                    }
-                }
-                break;
-            default:
-                throw new InvalidOperationException($"not support type {message.Type}");
+
+                    break;
+                default:
+                    throw new InvalidOperationException($"not support type {message.Type}");
+            }
+        }
+        catch (Exception e)
+        {
+            // ignored
         }
     }
 }

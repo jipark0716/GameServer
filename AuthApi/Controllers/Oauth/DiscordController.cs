@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using Discord;
 using Discord.Rest;
 using Microsoft.AspNetCore.Mvc;
+using Util;
 
 namespace AuthApi.Controllers.Oauth;
 

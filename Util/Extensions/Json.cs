@@ -1,4 +1,7 @@
+using System.Reflection;
+using System.Security.Claims;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Util.Extensions;
 
@@ -15,6 +18,27 @@ public static class Json
         var body = source.ToJsonByte(options);
         return BitConverter.GetBytes(type).Merge(BitConverter.GetBytes((ushort)body.Length), body);
     }
+
+    public static T? Serialize<T>(this IEnumerable<Claim> source) where T : new()
+        => (T?)source.Serialize(typeof(T));
     
-    
+    public static object? Serialize(this IEnumerable<Claim> source, Type type)
+    {
+        var result = Activator.CreateInstance(type);
+
+        if (result is null) return null;
+        
+        foreach (var row in source)
+        {
+            var propertyInfo = type
+                .GetProperties()
+                .FirstOrDefault(o => o.GetCustomAttribute<JsonPropertyNameAttribute>()?
+                    .Name == row.Type);
+            
+            propertyInfo?
+                .SetValue(result, Convert.ChangeType(row.Value, propertyInfo.PropertyType));
+        }
+        
+        return result;
+    }
 }

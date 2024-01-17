@@ -12,3 +12,7 @@ public class AuthorAttribute : ListenerParameterAttribute
 public class JsonBodyAttribute : ListenerParameterAttribute
 {
 }
+
+public class JwtAttribute : ListenerParameterAttribute
+{
+}

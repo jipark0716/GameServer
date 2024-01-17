@@ -1,7 +1,12 @@
-namespace AuthApi;
+namespace Util;
 
 public class Config
 {
+    private static Config? _instance;
+    public static Config Default => _instance ??= CreateInstance();
+
+    private static Config CreateInstance() => new();
+
     public OauthConfig DiscordOauthConfig = new()
     {
         GrantUrl = "https://discord.com/api/v10/oauth2/token",

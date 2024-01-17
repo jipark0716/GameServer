@@ -1,8 +1,14 @@
+using System.Text.Json.Serialization;
+
 namespace Network.Packets;
 
 public class AuthorizeRequestDto
 {
-    public required ulong UserId { get; set; }    
+    [JsonPropertyName("id")]
+    public required ulong Id { get; set; }
+    
+    [JsonPropertyName("type")]
+    public required string Type { get; set; }
 }
 
 public class AuthorizeResponseDto(ulong userId)

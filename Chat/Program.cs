@@ -1,6 +1,4 @@
-﻿using System.Security.Cryptography;
-
-namespace Chat;
+﻿namespace Chat;
 
 internal static class Program
 {

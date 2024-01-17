@@ -1,7 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
+using System.Text;
 using System.Text.Json;
+using Microsoft.IdentityModel.Tokens;
 using Network.Attributes;
 using Network.Packets;
+using Util;
+using Util.Extensions;
 
 namespace Network.EventListeners;
 
@@ -13,6 +18,8 @@ public class OnClientMessageListener(object instance)
     
     private readonly Dictionary<ushort, Listener> _actions = new();
     public Action<ushort, Author, byte[]>? DefaultAction { private get; set; }
+
+    private TokenValidationParameters? _jwtValidateParameter;
     
     public void OnMessage(ushort actionType, Author author, byte[] payload)
     {
@@ -55,7 +62,24 @@ public class OnClientMessageListener(object instance)
         {
             AuthorAttribute => author,
             JsonBodyAttribute => JsonSerializer.Deserialize(body, parameterInfo.ParameterType),
+            JwtAttribute => GetJwtArgument(body, parameterInfo.ParameterType),
             _ => throw new("not support parameter type"),
         };
+    }
+
+    private object? GetJwtArgument(byte[] payload, Type parameterType)
+    {
+        var handler = new JwtSecurityTokenHandler();
+        var validations = _jwtValidateParameter ??= new TokenValidationParameters
+        {
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Config.Default.JwtKey)),
+            ValidateIssuer = false,
+            ValidateAudience = false
+        };
+        var tokenString = Encoding.Default.GetString(payload);
+        return handler
+            .ValidateToken(tokenString, validations, out _)
+            .Claims
+            .Serialize(parameterType);
     }
 }

@@ -5,7 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using Util.Extensions;
+using Util;
 
 namespace AuthApi.Controllers.Oauth;
 
@@ -62,7 +62,7 @@ public abstract class OauthController(Config config, OauthConfig oauthConfig) : 
                 new("type", body.Type)
             },
             notBefore: DateTime.Now,
-            expires: DateTime.Now.AddMinutes(5));
+            expires: DateTime.Now.AddHours(12));
         
         var token = new JwtSecurityToken(header, payload);
         return new JwtSecurityTokenHandler().WriteToken(token);

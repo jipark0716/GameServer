@@ -1,3 +1,5 @@
+using Util;
+
 namespace AuthApi;
 
 internal static class Program
