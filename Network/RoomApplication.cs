@@ -34,11 +34,15 @@ public abstract class RoomApplication : Application
         room.OnMessage(actionType, author, body);
     }
 
-    protected abstract Room Create(ulong roomId, CreateRequest request);
+    protected virtual Room Create(ulong roomId, Author author, CreateRequest request)
+        => Create(roomId, request);
+
+    protected virtual Room Create(ulong roomId, CreateRequest request)
+        => throw new NotImplementedException(nameof(Create));
 
     public void CreateRoom([Author] Author author, [JsonBody] CreateRequest request)
     {
-        var room = Create(_roomSequence++, request);
+        var room = Create(_roomSequence++, author, request);
         if (_rooms.TryAdd(room.Id, room) is false) return;
 
         RoomJoin(author, room);

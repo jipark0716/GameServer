@@ -1,4 +1,3 @@
-using System.Net.Sockets;
 using Network.EventListeners;
 using Network.Packets;
 using Network.Packets.Room;
@@ -25,7 +24,7 @@ public abstract class Room
     /// </summary>
     /// <param name="id"></param>
     /// <returns>true 이면 방 삭제</returns>
-    public bool LeaveUser(ulong id)
+    public virtual bool LeaveUser(ulong id)
     {
         Users.Remove(id);
         

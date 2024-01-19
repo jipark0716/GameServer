@@ -14,8 +14,8 @@ public class ChatRoom : Room
     
     public ChatRoom(ulong id, string name) : base(id, name)
     {
-        Listener.AddAction(2000, nameof(SendMessage));
         Listener.Instance = this;
+        Listener.AddAction(2000, nameof(SendMessage));
     }
     
     public void SendMessage([Author] Author author, [JsonBody] SendRequest request)
