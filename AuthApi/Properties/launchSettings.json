@@ -14,6 +14,7 @@
       "dotnetRunMessages": true,
       "launchBrowser": false,
       "launchUrl": "swagger",
+      "commandLineArgs": "app-env auth-api-application 155db8f4412c468b8a9db03c1d9c1ea9",
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"

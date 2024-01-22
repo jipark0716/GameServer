@@ -10,7 +10,7 @@ using Util;
 namespace AuthApi.Controllers.Oauth;
 
 [ApiController]
-public abstract class OauthController(Config config, OauthConfig oauthConfig) : ControllerBase
+public abstract class OauthController(AuthConfig config, OauthConfig oauthConfig) : ControllerBase
 {
     [HttpGet]
     public IActionResult Invoke()

@@ -8,7 +8,7 @@ using Util;
 namespace AuthApi.Controllers.Oauth;
 
 [Route("oauth/[controller]")]
-public class DiscordController(Config config) : OauthController(config, config.DiscordOauthConfig)
+public class DiscordController(AuthConfig config) : OauthController(config, config.DiscordOauthConfig)
 {
     public override async Task<TokenBody> GetTokenBody(HttpResponseMessage response)
     {
@@ -24,17 +24,17 @@ public class DiscordController(Config config) : OauthController(config, config.D
 public class OauthResponse
 {
     [JsonPropertyName("access_token")]
-    public required string AccessToken { get; set; }
+    public required string AccessToken { get; init; }
     
     [JsonPropertyName("token_type")]
-    public required string TokenType { get; set; }
+    public required string TokenType { get; init; }
     
     [JsonPropertyName("expires_in")]
-    public required int ExpiresIn { get; set; }
+    public required int ExpiresIn { get; init; }
     
     [JsonPropertyName("refresh_token")]
-    public required string RefreshToken { get; set; }
+    public required string RefreshToken { get; init; }
     
     [JsonPropertyName("scope")]
-    public required string Scope { get; set; }
+    public required string Scope { get; init; }
 }

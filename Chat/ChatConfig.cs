@@ -4,5 +4,5 @@ namespace Chat;
 
 public class ChatConfig
 {
-    public required NetworkConfig NetworkConfig { get; set; }
+    public required NetworkConfig NetworkConfig { get; init; }
 }

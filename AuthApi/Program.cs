@@ -1,4 +1,4 @@
-using Util;
+using Util.Extensions;
 
 namespace AuthApi;
 
@@ -10,7 +10,7 @@ internal static class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
         builder.Services.AddControllers();
-        builder.Services.AddScoped<Config>();
+        builder.Services.AddConfig<AuthConfig>(args);
         
         var app = builder.Build();
 

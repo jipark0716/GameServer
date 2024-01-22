@@ -29,7 +29,7 @@ public class ConfigLoader
         if (File.Exists(configPath) is false)
             return null;
         
-        Console.WriteLine("load from file");
+        Console.WriteLine($"load from file path:({configPath})");
 
         using var sr = new StreamReader(configPath);
         return sr.ReadToEnd();
