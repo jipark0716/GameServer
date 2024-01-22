@@ -13,9 +13,11 @@ public abstract class RoomApplication : Application
     private readonly Dictionary<ulong, Room> _rooms = new();
     private readonly Dictionary<ulong, ulong> _users = new();
     private ulong _roomSequence;
+    private readonly IRoomRepository _roomRepository;
     
-    protected RoomApplication(int maxConnections, int port): base(maxConnections, port)
+    protected RoomApplication(NetworkConfig config, IRoomRepository roomRepository): base(config)
     {
+        _roomRepository = roomRepository;
         AuthorizeMiddleware middleware = new();
         
         Listener.Instance = this;
@@ -34,15 +36,10 @@ public abstract class RoomApplication : Application
         room.OnMessage(actionType, author, body);
     }
 
-    protected virtual Room Create(ulong roomId, Author author, CreateRequest request)
-        => Create(roomId, request);
-
-    protected virtual Room Create(ulong roomId, CreateRequest request)
-        => throw new NotImplementedException(nameof(Create));
 
     public void CreateRoom([Author] Author author, [JsonBody] CreateRequest request)
     {
-        var room = Create(_roomSequence++, author, request);
+        var room = _roomRepository.Create(_roomSequence++, author, request);
         if (_rooms.TryAdd(room.Id, room) is false) return;
 
         RoomJoin(author, room);
@@ -53,7 +50,7 @@ public abstract class RoomApplication : Application
     protected virtual void SendCreateRoomResponse(Socket socket, Room room)
     {
         socket.SendAsync(
-            new CreateResponse(room.Id).Encapsuleation(1000));
+            new CreateResponse(room.Id).Encapsulation(1000));
     }
 
     private void LeaveRoom(ulong userId)

@@ -8,7 +8,7 @@ namespace Network.Rooms;
 public abstract class Room
 {
     public readonly ulong Id;
-    public readonly string Name;
+    private readonly string _name;
     protected readonly Dictionary<ulong, Author> Users = new();
     protected readonly OnClientMessageListener Listener;
 
@@ -16,7 +16,7 @@ public abstract class Room
     {
         Listener = new(this);
         Id = id;
-        Name = name;
+        _name = name;
     }
 
     /// <summary>
@@ -35,7 +35,7 @@ public abstract class Room
     {
         var userId = (ulong)author.UserId!;
         Users.Add(userId, author);
-        Send(new OnJoin(userId).Encapsuleation(1002), userId);
+        Send(new OnJoin(userId).Encapsulation(1002), userId);
     }
 
     public void OnMessage(ushort actionType, Author author, byte[] body)
@@ -54,5 +54,5 @@ public abstract class Room
     );
 
     protected virtual RoomDto CreateRoomPacket()
-        => new(Id, Users.Select(o => o.Key).ToHashSet(), Name);
+        => new(Id, Users.Select(o => o.Key).ToHashSet(), _name);
 }

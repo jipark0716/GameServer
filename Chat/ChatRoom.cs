@@ -29,12 +29,12 @@ public class ChatRoom : Room
             Content = request.Content
         };
         _messages.Add(message);
-        Send(new SendResponse(message).Encapsuleation(2000));
+        Send(new SendResponse(message).Encapsulation(2000));
     }
 
     public override void AddUser(Author author)
     {
         base.AddUser(author);
-        author.Socket.SendAsync(new JoinResponse(CreateRoomPacket(), _messages).Encapsuleation(1001));
+        author.Socket.SendAsync(new JoinResponse(CreateRoomPacket(), _messages).Encapsulation(1001));
     }
 }

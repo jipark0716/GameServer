@@ -1,5 +1,6 @@
 using System.Net.Sockets;
 using System.Text;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Network.Attributes;
 using Network.EventListeners;
@@ -10,31 +11,37 @@ using Util.Extensions;
 
 namespace Network;
 
-public abstract class Application
+public abstract class Application : IHostedService
 {
     private readonly ConnectionManager _connectionManager;
     private readonly Queue<ClientMessage> _clientMessageQueue = new();
     protected readonly OnClientMessageListener Listener;
 
-    protected Application(int maxConnections, int port)
+    protected Application(NetworkConfig config)
     {
         Listener = new(this);
         Listener.AddAction(100, nameof(Authorization));
-        _connectionManager = new(_clientMessageQueue, maxConnections, port);
+        _connectionManager = new(_clientMessageQueue, config.MaxConnections, config.Port);
     }
 
     public void Authorization([Author] Author author, [Jwt] AuthorizeRequestDto request)
     {
         author.UserId = request.Id;
         AuthorizeResponseDto response = new(author.UserId ?? throw new Exception("user id is null"));
-        author.Socket.SendAsync(response.Encapsuleation(101));
+        author.Socket.SendAsync(response.Encapsulation(101));
     }
 
-    public Task StartAsync() => Task.Run(() =>
+    public Task StartAsync(CancellationToken cancellationToken) => Task.Run(() =>
     {
         _connectionManager.Start(); // network 스레드
         _clientMessageQueue.DequeueLoop().Each(OnMessage);
     });
+    
+    public Task StopAsync(CancellationToken cancellationToken)
+    {
+        Log.Information("End Network Application");
+        return Task.CompletedTask;
+    }
     
     protected virtual void OnDisconnect(ulong id) {}
 
@@ -58,7 +65,7 @@ public abstract class Application
             "[{connectionId}] connect ip:{ip}",
             connectionId,
             socket.RemoteEndPoint?.ToString());
-        socket.SendAsync(new HelloPacket(connectionId).Encapsuleation(100));
+        socket.SendAsync(new HelloPacket(connectionId).Encapsulation(100));
     }
 
     private void OnMessage(ClientMessage message)

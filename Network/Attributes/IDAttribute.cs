@@ -1,18 +1,10 @@
 namespace Network.Attributes;
 
 [AttributeUsage(AttributeTargets.Parameter)]
-public abstract class ListenerParameterAttribute : Attribute
-{
-}
+public abstract class ListenerParameterAttribute : Attribute;
 
-public class AuthorAttribute : ListenerParameterAttribute
-{
-}
+public class AuthorAttribute : ListenerParameterAttribute;
 
-public class JsonBodyAttribute : ListenerParameterAttribute
-{
-}
+public class JsonBodyAttribute : ListenerParameterAttribute;
 
-public class JwtAttribute : ListenerParameterAttribute
-{
-}
+public class JwtAttribute : ListenerParameterAttribute;

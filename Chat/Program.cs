@@ -1,4 +1,7 @@
-﻿using Serilog;
+﻿using Microsoft.Extensions.Hosting;
+using Serilog;
+using Util.Extensions;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Chat;
 
@@ -11,9 +14,11 @@ internal static class Program
             .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
             .CreateLogger();
 
-            
-        ChatApplication application = new(1024, 7000);
-        application.StartAsync().Wait();
-        Console.ReadLine();
+
+        var builder = Host.CreateApplicationBuilder();
+        builder.Services.AddConfig<ChatConfig>(args);
+        builder.Services.AddHostedService<ChatApplication>();
+        var host = builder.Build();
+        host.Run();
     }
 }

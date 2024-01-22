@@ -171,7 +171,7 @@ public class PenguinPartyRoom : HasOwnerRoom
     public void ChangeSetting([JsonBody] GameSetting setting)
     {
         _gameState.GameSetting = setting;
-        Send(setting.Encapsuleation(1003));
+        Send(setting.Encapsulation(1003));
     }
 
     public void Start()
@@ -224,6 +224,8 @@ public class PenguinPartyRoom : HasOwnerRoom
             o.Cards.Clear();
         });
         ClearBoard();
+        
+        // 라운드 종료 결과 전송
     }
 
     private void RoundStart()
