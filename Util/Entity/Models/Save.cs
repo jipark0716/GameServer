@@ -6,11 +6,11 @@ namespace Util.Entity.Models;
 public class Save
 {
     [Key]
-    public required ulong Id { get; set; }
+    public ulong Id { get; init; }
     
-    public required byte GameType { get; set; }
+    public required byte GameType { get; init; }
     
     public required byte[] Body { get; set; }
     
-    public required DateTime CreatedAt { get; set; }
+    public DateTime CreatedAt { get; init; }
 }

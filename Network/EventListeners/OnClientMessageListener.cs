@@ -72,7 +72,7 @@ public class OnClientMessageListener(object instance)
         var handler = new JwtSecurityTokenHandler();
         var validations = _jwtValidateParameter ??= new TokenValidationParameters
         {
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Config.Default.JwtKey)),
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("7bb223e4b914dbaf37a8eaa5fc8d9af8b2352380db0bdd3f1591468c698fbbfa74776fe1600a43c1de315cc3e595375392bc6d661f691a3c0f360cb5fb9c1b4a")),
             ValidateIssuer = false,
             ValidateAudience = false
         };

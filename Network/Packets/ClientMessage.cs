@@ -1,4 +1,5 @@
 using System.Net.Sockets;
+using Network.Rooms;
 
 namespace Network.Packets;
 
@@ -13,6 +14,7 @@ public class Author(ulong connectionId, Socket socket)
 {
     public readonly ulong ConnectionId = connectionId;
     public ulong? UserId;
+    public IRoom? Room;
     public readonly Socket Socket = socket;
 }
 

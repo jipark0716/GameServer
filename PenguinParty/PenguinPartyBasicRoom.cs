@@ -7,20 +7,24 @@ using PenguinParty.Packets;
 using PenguinParty.Repositories;
 using Serilog;
 using Util.Extensions;
+using Util.Saves;
 
 namespace PenguinParty;
 
-public class PenguinPartyRoom : HasOwnerRoom
+public class PenguinPartyBasicRoom : HasOwnerBasicRoom
 {
-    private readonly GameState _gameState = new();
+    private GameState _gameState = new();
     private readonly CardRepository _cardRepository;
+    private readonly SaveRepository _saveRepository;
     
-    public PenguinPartyRoom(
+    public PenguinPartyBasicRoom(
         ulong id,
         Author author,
         string name,
-        CardRepository cardRepository) : base(id, author, name)
+        CardRepository cardRepository,
+        SaveRepository saveRepository) : base(id, author, name)
     {
+        _saveRepository = saveRepository;
         _cardRepository = cardRepository;
         
         SimpleMiddleware isPreStartMiddleware = new(_ => !_gameState.IsStart); // 시작전인지 검사
@@ -31,7 +35,22 @@ public class PenguinPartyRoom : HasOwnerRoom
         Listener.AddAction(1001, nameof(ChangeSetting), isPreStartMiddleware, IsOwnerMiddleware);
         Listener.AddAction(1002, nameof(Start), isPreStartMiddleware, IsOwnerMiddleware);
         Listener.AddAction(1003, nameof(SubmitCard), isStartedMiddleware, isCurrentTurnPlayerMiddleware);
-        Listener.AddAction(1003, nameof(SkipTurn), isStartedMiddleware, isCurrentTurnPlayerMiddleware);
+        Listener.AddAction(1004, nameof(SkipTurn), isStartedMiddleware, isCurrentTurnPlayerMiddleware);
+        Listener.AddAction(1005, nameof(Save));
+        Listener.AddAction(1005, nameof(Load));
+    }
+
+    public async void Save()
+    {
+        var save = await _saveRepository.Save(_gameState, 0);
+        // 저장 끝났다고 피드백
+    }
+
+    public async void Load([JsonBody] ulong id)
+    {
+        var gameState = await _saveRepository.Load<GameState>(id, 0);
+        if (gameState is null) return;
+        _gameState = gameState;
     }
 
     public void SubmitCard([JsonBody] SubmitCardRequest request)

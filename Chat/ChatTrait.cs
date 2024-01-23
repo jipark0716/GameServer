@@ -1,23 +1,21 @@
 using Chat.Packets.Messages;
 using Network.Attributes;
 using Network.Packets;
+using Network.Packets.Room;
 using Network.Rooms;
+using Network.Rooms.Traits;
 using Util.Extensions;
 using JoinResponse = Chat.Packets.Messages.JoinResponse;
 
 namespace Chat;
 
-public class ChatRoom : Room
+public class ChatTrait(IRoom room, RoomState state) : BaseTrait(room, state)
 {
     private ulong _messageSequence;
-    private readonly List<Message> _messages = new();
-    
-    public ChatRoom(ulong id, string name) : base(id, name)
-    {
-        Listener.Instance = this;
-        Listener.AddAction(2000, nameof(SendMessage));
-    }
-    
+    private readonly List<Message> _messages = [];
+    private readonly RoomState _state = state;
+
+    [Action(2000)]
     public void SendMessage([Author] Author author, [JsonBody] SendRequest request)
     {
         var userId = (ulong)author.UserId!;
@@ -29,12 +27,13 @@ public class ChatRoom : Room
             Content = request.Content
         };
         _messages.Add(message);
-        Send(new SendResponse(message).Encapsulation(2000));
+        _state.Broadcast(new SendResponse(message).Encapsulation(2000));
     }
 
-    public override void AddUser(Author author)
+    public override void Join(Author author)
     {
-        base.AddUser(author);
-        author.Socket.SendAsync(new JoinResponse(CreateRoomPacket(), _messages).Encapsulation(1001));
+        room.Join(author);
+        author.Socket.SendAsync(new JoinResponse(new RoomDto(RoomState), _messages).Encapsulation(1001));
+        RoomState.Broadcast(new OnJoin((ulong)author.UserId!).Encapsulation(1002));
     }
 }

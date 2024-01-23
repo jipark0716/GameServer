@@ -5,5 +5,5 @@ namespace Network.Rooms;
 
 public interface IRoomRepository
 {
-    public Room Create(ulong roomId, Author author, CreateRequest request);
+    public IRoom Create(Author author, CreateRequest request);
 }

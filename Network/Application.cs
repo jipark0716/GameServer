@@ -1,9 +1,5 @@
-using System.Net.Sockets;
-using System.Text;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Tokens;
-using Network.Attributes;
-using Network.EventListeners;
+using Network.Node;
 using Network.Packets;
 using Network.Sockets;
 using Serilog;
@@ -11,31 +7,23 @@ using Util.Extensions;
 
 namespace Network;
 
-public abstract class Application : IHostedService
+public class Application : IHostedService
 {
     private readonly ConnectionManager _connectionManager;
     private readonly Queue<ClientMessage> _clientMessageQueue = new();
-    protected readonly OnClientMessageListener Listener;
+    private readonly IGameNode _gameNode;
 
-    protected Application(NetworkConfig config)
+    public Application(NetworkConfig config, IGameNode gameNode)
     {
-        Listener = new(this);
-        Listener.AddAction(100, nameof(Authorization));
+        _gameNode = gameNode;
         _connectionManager = new(_clientMessageQueue, config.MaxConnections, config.Port);
-    }
-
-    public void Authorization([Author] Author author, [Jwt] AuthorizeRequestDto request)
-    {
-        author.UserId = request.Id;
-        AuthorizeResponseDto response = new(author.UserId ?? throw new Exception("user id is null"));
-        author.Socket.SendAsync(response.Encapsulation(101));
     }
 
     public Task StartAsync(CancellationToken cancellationToken) => Task.Run(() =>
     {
         _connectionManager.Start(); // network 스레드
         _clientMessageQueue.DequeueLoop().Each(OnMessage);
-    });
+    }, cancellationToken);
     
     public Task StopAsync(CancellationToken cancellationToken)
     {
@@ -43,13 +31,11 @@ public abstract class Application : IHostedService
         return Task.CompletedTask;
     }
     
-    protected virtual void OnDisconnect(ulong id) {}
-
     private IEnumerable<(ushort, byte[])> ChunkStream(byte[]? payload)
     {
         ObjectDisposedException.ThrowIf(
             payload is null,
-            new ArgumentNullException("payload is must not null"));
+            new ArgumentNullException(nameof(payload)));
 
         while (payload.Length >= 4)
         {
@@ -59,15 +45,6 @@ public abstract class Application : IHostedService
         }
     }
 
-    protected virtual void OnConnect(Socket socket, ulong connectionId)
-    {
-        Log.Information(
-            "[{connectionId}] connect ip:{ip}",
-            connectionId,
-            socket.RemoteEndPoint?.ToString());
-        socket.SendAsync(new HelloPacket(connectionId).Encapsulation(100));
-    }
-
     private void OnMessage(ClientMessage message)
     {
         try
@@ -75,39 +52,16 @@ public abstract class Application : IHostedService
             switch (message.Type)
             {
                 case MessageType.Disconnect:
-                    OnDisconnect(message.Author.ConnectionId);
+                    _gameNode.OnDisconnect(message.Author);
                     break;
                 case MessageType.Connect:
-                    OnConnect(message.Author.Socket, message.Author.ConnectionId);
+                    _gameNode.OnConnect(message.Author);
                     break;
                 case MessageType.Message:
                     foreach (var (actionType, body) in ChunkStream(message.Payload))
                     {
-                        try
-                        {
-                            Listener.OnMessage(actionType, message.Author, body);
-                        }
-                        catch (SecurityTokenMalformedException)
-                        {
-                            Log.Information(
-                                "[{connectionId}] auth fail id:{id} type:{type} request:{body}",
-                                message.Author.ConnectionId, 
-                                message.Author.UserId,
-                                actionType,
-                                Encoding.Default.GetString(body));
-                        }
-                        catch (Exception e)
-                        {
-                            Log.Error(
-                                e,
-                                "[{connectionId}] action fail id:{id} type:{type} request:{body}",
-                                message.Author.ConnectionId,
-                                message.Author.UserId,
-                                actionType,
-                                Encoding.Default.GetString(body));
-                        }
+                        _gameNode.OnMessage(message.Author, actionType, body);
                     }
-
                     break;
                 default:
                     throw new InvalidOperationException($"not support type {message.Type}");
@@ -119,6 +73,6 @@ public abstract class Application : IHostedService
                 "[{connectionId}] request parse fail id:{Id}",
                 message.Author.ConnectionId,
                 message.Author.UserId);
-        }
+        } 
     }
 }

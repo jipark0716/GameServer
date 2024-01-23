@@ -1,5 +1,6 @@
 namespace PenguinParty.Dto;
 
+[Serializable]
 public class GameState
 {
     public GameSetting GameSetting = new();

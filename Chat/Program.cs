@@ -2,6 +2,9 @@
 using Serilog;
 using Util.Extensions;
 using Microsoft.Extensions.DependencyInjection;
+using Network;
+using Network.Node;
+using Network.Rooms;
 
 namespace Chat;
 
@@ -14,10 +17,14 @@ internal static class Program
             .WriteTo.File("log.txt", rollingInterval: RollingInterval.Day, rollOnFileSizeLimit: true)
             .CreateLogger();
 
-
         var builder = Host.CreateApplicationBuilder();
-        builder.Services.AddConfig<ChatConfig>(args);
-        builder.Services.AddHostedService<ChatApplication>();
+        var config = builder.Services.AddConfig<ChatConfig>(args);
+        builder.Services.AddSingleton(config.NetworkConfig);
+        builder.Services.AddSingleton<NodeFactory>();
+        builder.Services.AddSingleton(new JwtDecoder(config.JwtKey));
+        builder.Services.AddSingleton<IRoomRepository, ChatRoomRepository>();
+        builder.Services.AddSingleton<IGameNode>(o => o.GetService<NodeFactory>()?.Create()!);
+        builder.Services.AddHostedService<Application>();
         var host = builder.Build();
         host.Run();
     }
