@@ -7,6 +7,7 @@ public class PenguinPartyConfig
 {
     public required DatabaseConfigs Database { get; init; }
     public required NetworkConfig NetworkConfig { get; init; }
+    public required string JwtKey { get; init; }
 }
 
 public class DatabaseConfigs

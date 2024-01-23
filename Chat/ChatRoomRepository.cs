@@ -8,9 +8,9 @@ public class ChatRoomRepository : IRoomRepository
 {
     private ulong _seq;
     
-    public IRoom Create(Author author, CreateRequest request)
+    public virtual IRoom Create(Author author, CreateRequest request)
     {
-        RoomState state = new(_seq++, request.Name);
+        RoomState state = new(_seq++, request.Name, author);
         IRoom result = new BasicRoom(state);
         return new ChatTrait(result, state);
     }

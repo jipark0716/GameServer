@@ -5,10 +5,9 @@ using Network.Exceptions;
 using Network.Packets;
 
 namespace Network.Rooms.Traits;
-
+public delegate void Listener(Author author, byte[] body);
 public abstract class BaseTrait : IRoom
 {
-    private delegate void Listener(Author author, byte[] body);
     public RoomState RoomState { get; }
     private readonly Dictionary<ushort, Listener> _actions;
     private readonly IRoom _room;
@@ -61,8 +60,13 @@ public abstract class BaseTrait : IRoom
                 DefaultAction(author, actionType, body);
             }
             
-            action?.Invoke(author, body);
+            RunAction(action!, author, body);
         }
+    }
+
+    protected virtual void RunAction(Listener action, Author author, byte[] body)
+    {
+        action.Invoke(author, body);
     }
     
     protected virtual void DefaultAction(Author author, ushort actionType, byte[] body)

@@ -18,10 +18,11 @@ public interface IRoom
     public void OnMessage(Author author, ushort actionType, byte[] body);
 }
 
-public class RoomState(ulong id, string name)
+public class RoomState(ulong id, string name, Author owner)
 {
-    public ulong Id { get; init; } = id;
+    public ulong Id { get; } = id;
     public readonly string Name = name;
+    public Author Owner = owner;
     public readonly Dictionary<ulong, Author> Users = [];
 
     public void Broadcast(byte[] payload)
