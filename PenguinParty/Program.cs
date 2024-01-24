@@ -1,9 +1,7 @@
 using Network;
 using Network.Node;
 using Network.Rooms;
-using PenguinParty.Dto;
 using PenguinParty.Repositories;
-using Serilog;
 using Util.Extensions;
 
 namespace PenguinParty;
@@ -17,6 +15,7 @@ internal static class Program
         builder.Services.AddSingleton(config.NetworkConfig);
         builder.Services.AddSingleton<Chat.NodeFactory>();
         builder.Services.AddSingleton(new JwtDecoder(config.JwtKey));
+        builder.Services.AddSingleton<CardRepository>();
         builder.Services.AddSingleton<IRoomRepository, PenguinPartyRoomRepository>();
         builder.Services.AddSingleton<IGameNode>(o => o.GetService<Chat.NodeFactory>()?.Create()!);
         builder.Services.AddHostedService<Application>();

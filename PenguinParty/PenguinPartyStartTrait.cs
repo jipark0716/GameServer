@@ -3,6 +3,7 @@ using Network.Packets;
 using Network.Rooms;
 using Network.Rooms.Traits;
 using PenguinParty.Dto;
+using PenguinParty.Packets;
 using PenguinParty.Repositories;
 using Util.Extensions;
 
@@ -23,12 +24,20 @@ public class PenguinPartyStartTrait(
         }
     }
     
-    [Action(1001)]
+    [Action(3000)]
     public void Start([Author] Author author)
     {
         gameState.IsStart = true;
         gameState.Players = RoomState.Users.Keys.Select(o => new Player(o)).ToArray();
         ShuffleCard();
+        foreach (var player in gameState.Players)
+        {
+            roomState.Users
+                .GetValueOrDefault(player.UserId)?
+                .Socket
+                .SendAsync(
+                    new StartRoundResponse(player.Cards).Encapsulation(3000));
+        }
     }
     
     private byte GetCardCount()
@@ -36,9 +45,9 @@ public class PenguinPartyStartTrait(
     
     private void ShuffleCard()
     {
-        var hands = cardRepository .Get(GetCardCount())
+        var hands = cardRepository.Get(GetCardCount())
             .Shuffle()
-            .Chunk(gameState.Players.Length)
+            .Chunk(GetCardCount() / gameState.Players.Length)
             .ToArray();
         
         foreach (var (player, i) in gameState.Players.WithIndex())

@@ -20,7 +20,7 @@ public class PenguinPartyTrait(
         }
     }
     
-    [Action(1002)]
+    [Action(3001)]
     public void SubmitCard([Author] Author author, [JsonBody] SubmitCardRequest request)
     {
         var card = gameState.CurrentTurnPlayer.Cards[request.CardIndex];
@@ -35,7 +35,7 @@ public class PenguinPartyTrait(
         SkipTurn(author);
     }
 
-    [Action(1003)]
+    [Action(3002)]
     public void SkipTurn([Author] Author author)
     {
         gameState.Turn++;
