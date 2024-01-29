@@ -2,7 +2,7 @@ using PenguinParty.Dto;
 
 namespace PenguinParty.Packets;
 
-public class StartRoundResponse(IEnumerable<Card> cards)
+public class StartRoundResponse
 {
-    public IEnumerable<Card> Cards { get; init; }  = cards;
+    public required IEnumerable<Card> Cards { get; init; }
 }

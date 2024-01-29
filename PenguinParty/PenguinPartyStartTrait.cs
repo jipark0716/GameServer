@@ -4,7 +4,7 @@ using Network.Rooms;
 using Network.Rooms.Traits;
 using PenguinParty.Dto;
 using PenguinParty.Packets;
-using PenguinParty.Repositories;
+using PenguinParty.Services;
 using Util.Extensions;
 
 namespace PenguinParty;
@@ -12,47 +12,45 @@ namespace PenguinParty;
 public class PenguinPartyStartTrait(
     IRoom room,
     RoomState roomState,
-    GameState gameState,
-    CardRepository cardRepository) : BaseTrait(room, roomState)
+    PenguinPartyService service) : BaseTrait(room, roomState)
 {
     protected override void RunAction(Listener action, Author author, byte[] body)
     {
+        service.OnRoundStart += SendRoundStartPacket;
+        service.OnRoundEnd += SendRoundEndPacket;
         // 방장만 시작 가능
-        if (author == roomState.Owner)
+        if (author == RoomState.Owner)
         {
             base.RunAction(action, author, body);
         }
     }
     
     [Action(3000)]
-    public void Start([Author] Author author)
+    public void Start()
     {
-        gameState.IsStart = true;
-        gameState.Players = RoomState.Users.Keys.Select(o => new Player(o)).ToArray();
-        ShuffleCard();
-        foreach (var player in gameState.Players)
+        service.Start(RoomState.Users.Keys);
+    }
+
+    private void SendRoundStartPacket()
+    {
+        foreach (var player in service.GetPlayers())
         {
-            roomState.Users
+            RoomState.Users
                 .GetValueOrDefault(player.UserId)?
                 .Socket
                 .SendAsync(
-                    new StartRoundResponse(player.Cards).Encapsulation(3000));
+                    new StartRoundResponse
+                    {
+                        Cards = player.Cards
+                    }.Encapsulation(3000));
         }
     }
-    
-    private byte GetCardCount()
-        => (byte)(36 - 36 % gameState.Players.Length);
-    
-    private void ShuffleCard()
+
+    private void SendRoundEndPacket()
     {
-        var hands = cardRepository.Get(GetCardCount())
-            .Shuffle()
-            .Chunk(GetCardCount() / gameState.Players.Length)
-            .ToArray();
-        
-        foreach (var (player, i) in gameState.Players.WithIndex())
+        roomState.Broadcast(new RoundEndResponse
         {
-            player.Cards.AddRange(hands[i]);
-        }
+            Players = service.GetPlayers()
+        }.Encapsulation(3002));
     }
 }

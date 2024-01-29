@@ -1,3 +1,6 @@
+using System.Data;
+using Util.Extensions;
+
 namespace PenguinParty.Dto;
 
 public class Cell
@@ -7,32 +10,71 @@ public class Cell
 
 public class Board
 {
-    public readonly Cell[][] Cells;
+    private readonly Cell[][] _cells;
     private readonly Dictionary<(int, int), (Card?, Card?)> _submittable = [];
     private readonly int _size;
     private byte _submitCount;
-    
+
     public Board(int size = 8)
     {
         _size = size;
-        
-        Cells = new Cell[size][];
+
+        _cells = new Cell[size][];
         for (var y = 0; y < size; y++)
         {
             var xSize = size - y;
-            Cells[y] = new Cell[xSize];
+            _cells[y] = new Cell[xSize];
             for (var x = 0; x < xSize; x++)
             {
-                Cells[y][x] = new Cell();
+                _cells[y][x] = new Cell();
             }
         }
+    }
+
+    public void Clear()
+    {
+        _submitCount = default;
+        _cells.Each(o => o.Each(c => c.Card = null));
+        _submittable.Clear();
+    }
+
+    public bool IsSubmittable(Card[] cards)
+    {
+        ArgumentNullException.ThrowIfNull(cards);
+
+        var submittable = GetSubmittable();
+        return submittable.Length == 0 || cards.Intersect(submittable).Any();
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <returns>null: 못놓음, 빈배열: 다 놓을수 있음</returns>
+    private Card[] GetSubmittable()
+    {
+        var result = new List<Card>();
+        foreach (var submittable in _submittable.Values)
+        {
+            if (submittable.Item1 is null)
+            {
+                return [];
+            }
+            
+            result.Add(submittable.Item1);
+            if (submittable.Item2 is not null)
+            {
+                result.Add(submittable.Item2);
+            }
+        }
+
+        return result.Distinct().ToArray();
     }
 
     public bool Submit(int x, int y, Card card)
     {
         if (!ValidateSubmit(x, y, card)) return false;
         
-        Cells[y][x].Card = card;
+        _cells[y][x].Card = card;
         _submitCount++;
         _submittable.Remove((x, y));
 
@@ -54,7 +96,7 @@ public class Board
             return;
         }
         
-        if (Cells[y][x].Card is null)
+        if (Get(x, y)?.Card is null)
         {
             if (y == 0)
             {
@@ -81,7 +123,7 @@ public class Board
     {
         try
         {
-            return Cells[y][x];
+            return _cells[y][x];
         }
         catch (IndexOutOfRangeException)
         {
