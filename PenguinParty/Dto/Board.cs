@@ -43,21 +43,21 @@ public class Board
         ArgumentNullException.ThrowIfNull(cards);
 
         var submittable = GetSubmittable();
-        return submittable.Length == 0 || cards.Intersect(submittable).Any();
+        return submittable is null || submittable.Intersect(cards).Any();
     }
 
     /// <summary>
     /// 
     /// </summary>
-    /// <returns>null: 못놓음, 빈배열: 다 놓을수 있음</returns>
-    private Card[] GetSubmittable()
+    /// <returns>null: 다 놓을수 있음, 빈배열: 못놓음</returns>
+    private Card[]? GetSubmittable()
     {
         var result = new List<Card>();
         foreach (var submittable in _submittable.Values)
         {
             if (submittable.Item1 is null)
             {
-                return [];
+                return null;
             }
             
             result.Add(submittable.Item1);
@@ -86,7 +86,7 @@ public class Board
 
     private void AsyncSubmittable(int x, int y)
     {
-        if (y > _size || x > _size - y || x < 0)
+        if (y >= _size || x >= _size - y || x < 0)
         {
             return;
         }

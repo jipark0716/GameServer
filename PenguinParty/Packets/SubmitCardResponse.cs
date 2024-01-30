@@ -2,9 +2,10 @@ using PenguinParty.Dto;
 
 namespace PenguinParty.Packets;
 
-public class SubmitCardResponse(byte x, byte y, Card card)
+public class SubmitCardResponse
 {
-    public byte X { get; set; } = x;
-    public byte Y { get; set; } = y;
-    public Card Card { get; set; } = card;
+    public required byte X { get; init; }
+    public required byte Y { get; init; }
+    public required Card Card { get; init; }
+    public required ulong UserId { get; init; }
 }

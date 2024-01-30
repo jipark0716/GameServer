@@ -1,8 +1,8 @@
 namespace PenguinParty.Dto;
 
-public class Player(ulong userId)
+public class Player
 {
-    public readonly ulong UserId = userId;
+    public required ulong UserId { get; init; }
     public List<Card> Cards { get; } = [];
-    public int Score;
+    public int Score { get; set; }
 }

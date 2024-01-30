@@ -1,3 +1,5 @@
+using System.Collections;
+
 namespace PenguinParty.Dto;
 
 public class Card(byte type)

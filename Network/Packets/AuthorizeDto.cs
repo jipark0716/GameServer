@@ -11,7 +11,7 @@ public class AuthorizeRequestDto
     public required string Type { get; set; }
 }
 
-public class AuthorizeResponseDto(ulong userId)
+public class AuthorizeResponseDto
 {
-    public ulong UserId { get; } = userId;
+    public required ulong UserId { get; init; }
 }
