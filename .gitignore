@@ -1,4 +1,5 @@
 */config_*.json
+*/log*.txt
 .idea
 .vs
 ## Ignore Visual Studio temporary files, build results, and

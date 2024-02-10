@@ -22,5 +22,5 @@ public class OauthConfig
     public required string ClientSecret { get; set; }
     public required string BasicAuth { get; set; }
     public required string ClientId { get; set; }
-    public required List<string> Scope { get; set; }
+    public required List<string> Scope { get; set; } 
 }
