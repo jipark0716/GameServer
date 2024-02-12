@@ -9,6 +9,7 @@ public class AuthTrait(IGameNode node, JwtDecoder jwtDecoder) : BaseTrait(node, 
     [Action(100)]
     public void Authorization([Author] Author author, [Jwt] AuthorizeRequestDto request)
     {
+        if (author.UserId is not null) return;
         author.UserId = request.Id;
         author.Socket.SendAsync(new AuthorizeResponseDto
         {

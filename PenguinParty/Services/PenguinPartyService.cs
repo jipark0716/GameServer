@@ -21,6 +21,7 @@ public class PenguinPartyService(
     {
         ShuffleCard();
         source.RoundStart();
+        TurnStart();
     }
 
     public void RoundEnd()
@@ -43,13 +44,16 @@ public class PenguinPartyService(
         state.Turn++;
         
         // 다음 사람이 할 수 있는게 없으면 스킵
-        if (state.Board.IsSubmittable(state.CurrentTurnPlayer.Cards.Distinct().ToArray())) return;
-        
-        AutoSkipTurn();
+        if (state.Board.IsSubmittable(state.CurrentTurnPlayer.Cards.Distinct().ToArray()))
+        {
+            TurnStart();
+            return;
+        }
+
         TurnEnd(skipCount + 1);
     }
 
-    public void AutoSkipTurn() => source.AutoSkipTurn();
+    public void TurnStart() => source.TurnStart();
 
     public void SubmitCard(SubmitCardRequest request)
     {

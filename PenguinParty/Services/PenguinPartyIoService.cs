@@ -35,9 +35,9 @@ public class PenguinPartyIoService(
         // todo 게임 시작 패킷 전송
     }
 
-    public void AutoSkipTurn()
+    public void TurnStart()
     {
-        // todo 자동스킵 패킷 전송
+        roomState.Broadcast(new TurnStartResponse(gameState.CurrentTurnPlayer.UserId).Encapsulation(3003));
     }
 
     public void SubmitCard(SubmitCardRequest request)

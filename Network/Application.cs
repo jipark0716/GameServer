@@ -59,9 +59,7 @@ public class Application : IHostedService
                     break;
                 case MessageType.Message:
                     foreach (var (actionType, body) in ChunkStream(message.Payload))
-                    {
                         _gameNode.OnMessage(message.Author, actionType, body);
-                    }
                     break;
                 default:
                     throw new InvalidOperationException($"not support type {message.Type}");

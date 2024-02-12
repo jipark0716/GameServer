@@ -11,9 +11,8 @@ public class GameNodeLogger(IGameNode node) : IGameNode
     public void OnDisconnect(Author author)
     {
         Log.Information(
-            "[{connectionId}] connect ip:{ip}",
-            author.ConnectionId, 
-            author.Socket.RemoteEndPoint?.ToString());
+            "[{connectionId}] disconnect",
+            author.ConnectionId);
         
         try
         {
@@ -30,6 +29,11 @@ public class GameNodeLogger(IGameNode node) : IGameNode
 
     public void OnConnect(Author author)
     {
+        Log.Information(
+            "[{connectionId}] connect ip:{ip}",
+            author.ConnectionId,
+            author.Socket.RemoteEndPoint?.ToString());
+
         try
         {
             node.OnConnect(author);
