@@ -3,7 +3,7 @@
 나머지 아키텍트   
 https://distinct-spade-023.notion.site/14f48ff9ff44485abe047ae894cbf98d
 
-## 아플리케이션 아키텍트
+## 어플리케이션 아키텍트
 
 ![aa](./aa.png)  
 
