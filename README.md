@@ -1,6 +1,6 @@
 # 보드게임 온라인 포팅 소켓서버
 
-나머지 아키텍트   
+전체 문서   
 https://distinct-spade-023.notion.site/14f48ff9ff44485abe047ae894cbf98d
 
 ## 어플리케이션 아키텍트
