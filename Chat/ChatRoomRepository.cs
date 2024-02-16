@@ -1,17 +1,18 @@
 using Network.Packets;
 using Network.Packets.Room;
 using Network.Rooms;
+using Util.Extensions;
 
 namespace Chat;
 
-public class ChatRoomRepository : IRoomRepository
+public class ChatRoomRepository(IServiceProvider provider) : IRoomRepository
 {
     private ulong _seq;
-    
-    public virtual IRoom Create(Author author, CreateRequest request)
+
+    public IRoom Create(Author author, CreateRequest request)
     {
-        RoomState state = new(_seq++, request.Name, author);
-        IRoom result = new BasicRoom(state);
-        return new ChatTrait(result, state);
+        return provider.ProxyBuild<IRoom>(
+            [new RoomState(_seq++, request.Name, author)],
+            [typeof(BasicRoom), typeof(ChatTrait)]);
     }
 }

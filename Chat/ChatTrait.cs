@@ -14,6 +14,7 @@ public class ChatTrait(IRoom room, RoomState state) : BaseTrait(room, state)
     private ulong _messageSequence;
     private readonly List<Message> _messages = [];
     private readonly RoomState _state = state;
+    private readonly IRoom _room = room;
 
     [Action(2000)]
     public void SendMessage([Author] Author author, [JsonBody] SendRequest request)
@@ -32,7 +33,7 @@ public class ChatTrait(IRoom room, RoomState state) : BaseTrait(room, state)
 
     public override void Join(Author author)
     {
-        room.Join(author);
+        _room.Join(author);
         author.Socket.SendAsync(new JoinResponse(new RoomDto(RoomState), _messages).Encapsulation(1001));
         RoomState.Broadcast(new OnJoin((ulong)author.UserId!).Encapsulation(1002));
     }

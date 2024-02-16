@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthApi", "AuthApi\AuthApi.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PenguinParty", "PenguinParty\PenguinParty.csproj", "{93A51FDF-F0D0-4316-9314-6BAC4FF1E7B0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Convenience", "Convenience\Convenience.csproj", "{8278E7F1-9D8D-4235-A130-E97E2561F518}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{93A51FDF-F0D0-4316-9314-6BAC4FF1E7B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93A51FDF-F0D0-4316-9314-6BAC4FF1E7B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93A51FDF-F0D0-4316-9314-6BAC4FF1E7B0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8278E7F1-9D8D-4235-A130-E97E2561F518}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8278E7F1-9D8D-4235-A130-E97E2561F518}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8278E7F1-9D8D-4235-A130-E97E2561F518}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8278E7F1-9D8D-4235-A130-E97E2561F518}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
