@@ -1,4 +1,5 @@
 using Chat;
+using MagicMaze.Dto;
 using Network.Packets;
 using Network.Packets.Room;
 using Network.Rooms;
@@ -12,7 +13,7 @@ public class MagicMazeRoomRepository(IServiceProvider provider) : IRoomRepositor
 
     public IRoom Create(Author author, CreateRequest request)
     {
-        RoomState roomState = new(_seq++, request.Name, author);
+        MagicMazeRoomState roomState = new(_seq++, request.Name, author);
 
         return provider.ProxyBuild<IRoom>(
             [roomState],
