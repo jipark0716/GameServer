@@ -2,8 +2,9 @@ using MagicMaze.Dto.GameObjects;
 
 namespace MagicMaze.Dto;
 
-public class TileCard(Dictionary<byte, IGameObject> gameObjects, bool isStartTile)
+public class TileCard(IGameObject[] gameObjects, IWall[] walls, bool isStartTile)
 {
-    public readonly Dictionary<byte, IGameObject> GameObjects = gameObjects;
+    public readonly IGameObject[] GameObjects = gameObjects;
+    public readonly IWall[] Walls = walls;
     public readonly bool IsStartTile = isStartTile;
 }

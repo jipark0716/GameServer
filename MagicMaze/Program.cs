@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Hosting;
+﻿using System.Text.Json;
+using Microsoft.Extensions.Hosting;
 using Network;
 using Network.Node;
 using Network.Node.Traits;
@@ -20,6 +21,9 @@ internal static class Program
 
         var builder = Host.CreateApplicationBuilder();
         var config = builder.Services.AddConfig<MagicMazeConfig>(args);
+        builder.Services.AddSingleton(
+            JsonSerializer.Deserialize<Rule>(new StreamReader("gameRule.json").ReadToEnd())
+                ?? throw new FileNotFoundException("gameRule.json"));
         builder.Services.AddSingleton(config.NetworkConfig);
         builder.Services.AddSingleton(new JwtDecoder(config.JwtKey));
         builder.Services.AddSingleton<IRoomRepository, MagicMazeRoomRepository>();
