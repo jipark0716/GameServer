@@ -8,6 +8,5 @@ public class Rule
     {
         public required IEnumerable<int> Objects { get; init; }
         public required IEnumerable<int> Walls { get; init; }
-        public required bool IsStartCards { get; init; }
     }
 }

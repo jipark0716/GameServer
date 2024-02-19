@@ -10,11 +10,9 @@ public class TileRepository(Rule rule)
         => GetStartTile(rule.TitleCards[tileId], turned);
 
     private TileCard GetStartTile(Rule.TileCard card, int turned)
-        => new([
-
-        ], [
-
-        ], card.IsStartCards);
+        => new(
+            card.Objects.Select((o, i) => CreateObject(card, o, i, turned)).ToArray(),
+            card.Walls.Select(CreateWall).ToArray());
 
     private IWall? CreateWall(int id)
         => id switch
@@ -23,10 +21,11 @@ public class TileRepository(Rule rule)
             1 => new BasicWall(),
             2 or 3 or 4 or 5 => new SearchWall((CharacterType)id - 2),
             6 => new LoopHole(),
+            7 => new OpendWall(),
             _ => throw new ArgumentOutOfRangeException(nameof(id), id, null)
         };
 
-    private IGameObject? CreateObject(Rule.TileCard card, int index, int id, int turned)
+    private IGameObject? CreateObject(Rule.TileCard card, int id, int index, int turned)
         => id switch
         {
             0 => null,
@@ -56,13 +55,4 @@ public class TileRepository(Rule rule)
 
         throw new Exception("gameRule.json 파일 잘못됨");
     }
-
-// 오브젝트
-    // 0 none
-    // 1 Pause
-    // 2, 3, 4, 5 Teleportation
-    // 6, 7 Escalator
-    // 8, 9, 10, 11 Item
-    // 12, 13, 14, 15 Exit
-    // 16 CCTV
 }
