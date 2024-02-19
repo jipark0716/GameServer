@@ -2,7 +2,7 @@ namespace MagicMaze;
 
 public class Rule
 {
-    public required TileCard TitleCards { get; init; }
+    public required TileCard[] TitleCards { get; init; }
 
     public class TileCard
     {
